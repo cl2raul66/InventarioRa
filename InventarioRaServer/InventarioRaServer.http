@@ -1,0 +1,6 @@
+@InventarioRaServer_HostAddress = http://localhost:5116
+
+GET {{InventarioRaServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
