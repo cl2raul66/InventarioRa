@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgPrincipal"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    x:DataType="vm:PgPrincipalViewModel"
+    Shell.NavBarIsVisible="False">
+
+    <Grid
+        Padding="16"
+        RowDefinitions="auto,*,auto"
+        RowSpacing="16">
+        <Frame Style="{StaticResource FrameHeader}">
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="8">
+                <Label
+                    Margin="8,0,0,0"
+                    Style="{StaticResource LabelHeaderTitle}"
+                    Text="Inicio" />
+                <!--<HorizontalStackLayout Grid.Column="1" Spacing="8">
+                    <Button
+                        Command="{Binding GoToAgregarCommand}"
+                        FontFamily="icofont"
+                        Text="{StaticResource UiAdd}"
+                        ToolTipProperties.Text="Agregar nuevo artículo" />
+                    <Button
+                        Command="{Binding GoToDetalleCommand}"
+                        FontFamily="icofont"
+                        IsVisible="{OnIdiom Default=true,
+                                            Phone=false}"
+                        Text="{StaticResource List}"
+                        ToolTipProperties.Text="Ir a detalles" />
+                    <Button
+                        Command="{Binding GoToDespachoCommand}"
+                        FontFamily="icofont"
+                        Text="{StaticResource Exit}"
+                        ToolTipProperties.Text="Realizar despacho" />
+                    <Button
+                        Command="{Binding GoToClientesCommand}"
+                        FontFamily="icofont"
+                        IsVisible="{OnIdiom Default=true,
+                                            Phone=false}"
+                        Text="{StaticResource ContactAdd}"
+                        ToolTipProperties.Text="Ir a clientes" />
+                </HorizontalStackLayout>-->
+            </Grid>
+        </Frame>
+        <VerticalStackLayout
+            Grid.Row="1"
+            HorizontalOptions="{OnIdiom Default=Center,
+                                        Phone=Fill}"
+            Spacing="8"
+            VerticalOptions="Center">
+            <Frame Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label FontSize="Subtitle" Text="Inventario" />
+                    <Label FontSize="Body">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontAttributes="Bold"
+                                    Text="Cantidad de productos: "
+                                    TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding TotalArticulos, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+            </Frame>
+            <Frame Padding="10">
+                <VerticalStackLayout Spacing="8">
+                    <Label FontSize="Subtitle" Text="Despachos" />
+                    <Label FontSize="Body">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontAttributes="Bold"
+                                    Text="Para ventas: "
+                                    TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding Ventas, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label FontSize="Body">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontAttributes="Bold"
+                                    Text="Para uso: "
+                                    TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding Usadas, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+        <VerticalStackLayout Grid.Row="2" Spacing="16">
+            <Frame
+                Padding="16,12"
+                HorizontalOptions="{OnIdiom Default=Center,
+                                            Phone=Fill}"
+                MaximumWidthRequest="620">
+                <Grid RowDefinitions="auto,auto" RowSpacing="8">
+                    <Label FontSize="Subtitle" Text="Accesos rápidos:" />
+                    <FlexLayout
+                        Grid.Row="1"
+                        AlignContent="{OnIdiom Default=Center,
+                                               Phone=Start}"
+                        AlignItems="{OnIdiom Default=Center,
+                                             Phone=Stretch}"
+                        Direction="{OnIdiom Default=Row,
+                                            Phone=Column}"
+                        JustifyContent="{OnIdiom Default=Center,
+                                                 Phone=Center}"
+                        Wrap="{OnIdiom Default=Wrap,
+                                       Phone=NoWrap}">
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToClientesCommand}"
+                            Text="Ir a clientes" />
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToDetalleCommand}"
+                            Text="Ir a inventario" />
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToAgregarEntradaCommand}"
+                            Text="Agregar entrada" />
+                        <!--<Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToDespachoCommand}"
+                            Text="Realizar despacho" />-->
+                    </FlexLayout>
+                </Grid>
+            </Frame>
+            <Frame Style="{StaticResource FrameFooter}">
+                <Grid>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                        <Label Style="{StaticResource LabelFooter}" Text="By RandA Media Lab, Group" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

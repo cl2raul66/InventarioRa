@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgDespachoVarios"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:ctk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:model="clr-namespace:InventarioRa.Models"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Realizar despacho"
+    x:DataType="vm:PgDespachoVariosViewModel"
+    BackgroundColor="#30000000"
+    BindingContext="{vm:PgDespachoVariosViewModel}"
+    Shell.NavBarIsVisible="False"
+    Shell.PresentationMode="ModalAnimated">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Frame
+        Margin="16"
+        Padding="16"
+        HorizontalOptions="Center"
+        MaximumWidthRequest="620"
+        VerticalOptions="Center">
+        <Grid RowDefinitions="auto,*,auto" RowSpacing="16">
+            <Frame Style="{StaticResource FrameHeader}">
+                <Label
+                    HorizontalOptions="Center"
+                    Style="{StaticResource LabelHeaderTitle}"
+                    Text="Realizar despacho" />
+            </Frame>
+            <ScrollView
+                x:Name="ScrollView1"
+                Grid.Row="1"
+                MinimumWidthRequest="400">
+                <VerticalStackLayout Spacing="8">
+                    <Frame Margin="2" Padding="8">
+                        <VerticalStackLayout Spacing="8">
+                            <FlexLayout
+                                AlignContent="{OnIdiom Default=Start,
+                                                       Phone=Start}"
+                                AlignItems="{OnIdiom Default=Start,
+                                                     Phone=Stretch}"
+                                Direction="{OnIdiom Default=Row,
+                                                    Phone=Column}"
+                                JustifyContent="{OnIdiom Default=SpaceBetween,
+                                                         Phone=Center}"
+                                Wrap="{OnIdiom Default='Wrap',
+                                               Phone='NoWrap'}">
+                                <Grid
+                                    Padding="2"
+                                    RowDefinitions="auto,auto"
+                                    RowSpacing="4">
+                                    <Label Text="Fecha:" />
+                                    <DatePicker Grid.Row="1" Date="{Binding Fecha}" />
+                                </Grid>
+                                <Grid
+                                    Padding="2"
+                                    RowDefinitions="auto,auto"
+                                    RowSpacing="4">
+                                    <Label Text="Cliente:" />
+                                    <Grid
+                                        Grid.Row="1"
+                                        ColumnDefinitions="{OnIdiom Default='400,auto',
+                                                                    Phone='*,auto'}"
+                                        ColumnSpacing="8">
+                                        <Picker
+                                            x:Name="PickerClient"
+                                            Title="{OnIdiom Phone='Selecciona aquí'}"
+                                            ItemDisplayBinding="{Binding Name}"
+                                            ItemsSource="{Binding Clientes, Mode=OneWay}"
+                                            SelectedItem="{Binding SelectedCliente}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Clicked="Button_Clicked_1"
+                                            FontFamily="icofont"
+                                            Text="{StaticResource AddUsers3}" />
+                                    </Grid>
+                                </Grid>
+                                <Grid
+                                    x:Name="GridOfEntryClient"
+                                    IsVisible="false"
+                                    RowDefinitions="auto,auto"
+                                    RowSpacing="4"
+                                    WidthRequest="450">
+                                    <Label Text="Nuevo cliente:" />
+                                    <Entry
+                                        Grid.Row="1"
+                                        ClearButtonVisibility="WhileEditing"
+                                        Placeholder="Escriba aquí"
+                                        Text="{Binding ClienteName}" />
+                                </Grid>
+                            </FlexLayout>
+                            <FlexLayout
+                                AlignContent="{OnIdiom Default=Start,
+                                                       Phone=Start}"
+                                AlignItems="{OnIdiom Default=Start,
+                                                     Phone=Stretch}"
+                                Direction="{OnIdiom Default=Row,
+                                                    Phone=Column}"
+                                JustifyContent="{OnIdiom Default=Start,
+                                                         Phone=Center}"
+                                Wrap="NoWrap">
+                                <Grid
+                                    Margin="2"
+                                    MinimumWidthRequest="{OnIdiom Default='450',
+                                                                  Phone='500'}"
+                                    RowDefinitions="auto,auto"
+                                    RowSpacing="4">
+                                    <Label Style="{StaticResource LabelHeaderTitle}" Text="Artículo: *" />
+                                    <Picker
+                                        Title="{OnIdiom Phone='Selecciona aquí'}"
+                                        Grid.Row="1"
+                                        ItemDisplayBinding="{Binding Article}"
+                                        ItemsSource="{Binding Warehouse, Mode=OneWay}"
+                                        SelectedItem="{Binding SelectedInventory}" />
+                                </Grid>
+                                <Grid
+                                    Margin="2"
+                                    MaximumWidthRequest="{OnIdiom Default='110',
+                                                                  Phone='500'}"
+                                    RowDefinitions="auto,auto"
+                                    RowSpacing="4">
+                                    <Label Style="{StaticResource LabelHeaderTitle}" Text="Cantidad: *" />
+                                    <Entry
+                                        Grid.Row="1"
+                                        ClearButtonVisibility="WhileEditing"
+                                        HorizontalTextAlignment="End"
+                                        Keyboard="Numeric"
+                                        Placeholder="0.00"
+                                        Text="{Binding Cantidad}"
+                                        TextChanged="Entry_TextChanged" />
+                                </Grid>
+                            </FlexLayout>
+                            <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                                <Button Command="{Binding AgregarCommand}" Text="Agregar" />
+                                <Button
+                                    Command="{Binding EliminarCommand}"
+                                    IsEnabled="{Binding SelectedArticlesend, Mode=OneWay, Converter={ctk:IsNotNullConverter}}"
+                                    Text="Eliminar" />
+                            </HorizontalStackLayout>
+                            <Grid>
+                                <CollectionView
+                                    x:Name="CollectionView1"
+                                    ItemsSource="{Binding ArticlesSend, Mode=OneWay}"
+                                    SelectedItem="{Binding SelectedArticlesend}"
+                                    SelectionMode="Single">
+                                    <CollectionView.ItemsLayout>
+                                        <GridItemsLayout
+                                            HorizontalItemSpacing="4"
+                                            Orientation="Vertical"
+                                            Span="{OnIdiom Default=4,
+                                                           Phone=1}"
+                                            VerticalItemSpacing="4" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:ArticleDispatch">
+                                            <Frame Style="{StaticResource FrameItem}" ToolTipProperties.Text="{OnIdiom Tablet={Binding Article}, Desktop={Binding Article}}">
+                                                <FlexLayout
+                                                    AlignContent="{OnIdiom Default=Center,
+                                                                           Phone=Start}"
+                                                    AlignItems="{OnIdiom Default=Center,
+                                                                         Phone=Stretch}"
+                                                    Direction="{OnIdiom Default=Column,
+                                                                        Phone=Row}"
+                                                    JustifyContent="{OnIdiom Default=Center,
+                                                                             Phone=SpaceBetween}"
+                                                    Wrap="{OnIdiom Default=NoWrap,
+                                                                   Phone=NoWrap}">
+                                                    <Label
+                                                        FontSize="Body"
+                                                        HorizontalTextAlignment="{OnIdiom Default='Center',
+                                                                                          Phone='Start'}"
+                                                        LineBreakMode="MiddleTruncation"
+                                                        MaximumWidthRequest="290"
+                                                        Text="{Binding Article}" />
+                                                    <Label
+                                                        FontAttributes="Bold"
+                                                        FontSize="Subtitle"
+                                                        HorizontalTextAlignment="{OnIdiom Default='Center',
+                                                                                          Phone='End'}"
+                                                        Text="{Binding Amount}" />
+                                                </FlexLayout>
+                                            </Frame>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+            </ScrollView>
+            <Frame
+                Grid.Row="2"
+                Padding="8"
+                IsVisible="{OnIdiom Default=true,
+                                    Phone=false}">
+                <Grid
+                    Grid.Row="2"
+                    ColumnDefinitions="*, auto"
+                    ColumnSpacing="4">
+                    <Label IsVisible="{Binding VisibleErrorinfo, Mode=OneWay}" VerticalOptions="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontFamily="icofont"
+                                    Text="{StaticResource InfoCircle}"
+                                    TextColor="Red" />
+                                <Span Text=" Favor rellene los requeridos (*)." TextColor="Red" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        Spacing="4"
+                        VerticalOptions="CenterAndExpand">
+                        <Label FontSize="30" Text="|" />
+                        <Button Command="{Binding GoToBackCommand}" Text="Cancelar" />
+                        <Button Command="{Binding GuardarCommand}" Text="Guardar" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Frame>
+            <Frame
+                Grid.Row="2"
+                Padding="8"
+                IsVisible="{OnIdiom Default=false,
+                                    Phone=true}">
+                <VerticalStackLayout Spacing="16">
+                    <Label IsVisible="{Binding VisibleErrorinfo, Mode=OneWay}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontFamily="icofont"
+                                    Text="{StaticResource InfoCircle}"
+                                    TextColor="Red" />
+                                <Span Text=" Favor rellene los requeridos (*)." TextColor="Red" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Button Command="{Binding GuardarCommand}" Text="Guardar" />
+                    <Button Command="{Binding GoToBackCommand}" Text="Cancelar" />
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Frame>
+
+</ContentPage>

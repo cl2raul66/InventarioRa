@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgInventario"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:ctk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:model="clr-namespace:InventarioRa.Models"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Inventario"
+    x:DataType="vm:PgInventarioViewModel"
+    Shell.NavBarIsVisible="False">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Grid
+        Padding="16"
+        RowDefinitions="auto,*,auto"
+        RowSpacing="16">
+        <Frame Style="{StaticResource FrameHeader}">
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="8">
+                <HorizontalStackLayout Spacing="4">
+                    <Button
+                        Command="{Binding GoToBackCommand}"
+                        FontFamily="icofont"
+                        Text="{StaticResource ArrowLeft}"
+                        ToolTipProperties.Text="Regrasar" />
+                    <Label Style="{StaticResource LabelHeaderTitle}" Text="Inventario" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                    <Button
+                        x:Name="BtnVerinventario"
+                        Command="{Binding VerinventarioCommand}"
+                        FontFamily="icofont"
+                        Style="{StaticResource ButtonHeaderAsSwitch}"
+                        Text="{StaticResource FilesStack}"
+                        ToolTipProperties.Text="Ver inventario">
+                        <Button.Triggers>
+                            <DataTrigger
+                                Binding="{Binding IsWarehouseVisible}"
+                                TargetType="Button"
+                                Value="true">
+                                <Setter Property="TextColor" Value="{StaticResource PrimaryDark}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding IsWarehouseVisible}"
+                                TargetType="Button"
+                                Value="false">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Button
+                        x:Name="BtnVerdespachachos"
+                        Command="{Binding VerdespachachosCommand}"
+                        FontFamily="icofont"
+                        Style="{StaticResource ButtonHeaderAsSwitch}"
+                        Text="{StaticResource ShoppingCart}"
+                        ToolTipProperties.Text="Ver despachachos">
+                        <Button.Triggers>
+                            <DataTrigger
+                                Binding="{Binding IsDispatchesVisible}"
+                                TargetType="Button"
+                                Value="true">
+                                <Setter Property="TextColor" Value="{StaticResource Secondary}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding IsDispatchesVisible}"
+                                TargetType="Button"
+                                Value="false">
+                                <Setter Property="TextColor" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                    <Rectangle
+                        Fill="{StaticResource Primary}"
+                        HeightRequest="40"
+                        RadiusX="1"
+                        RadiusY="1"
+                        WidthRequest="2" />
+                    <Button
+                        Command="{Binding VerFiltrarCommand}"
+                        FontFamily="icofont"
+                        Style="{StaticResource ButtonHeaderAsSwitch}"
+                        Text="{StaticResource Filter}"
+                        ToolTipProperties.Text="Muestra cuadro de busquedas">
+                        <Button.Triggers>
+                            <DataTrigger
+                                Binding="{Binding ItsFilteredVisisble, Mode=OneWay}"
+                                TargetType="Button"
+                                Value="false">
+                                <Setter Property="Background" Value="{StaticResource Primary}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding ItsFilteredVisisble, Mode=OneWay}"
+                                TargetType="Button"
+                                Value="true">
+                                <Setter Property="Background" Value="{StaticResource Secondary}" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </HorizontalStackLayout>
+            </Grid>
+        </Frame>
+        <Grid
+            Grid.Row="1"
+            HorizontalOptions="Fill"
+            IsVisible="{Binding IsWarehouseVisible, Mode=OneWay}">
+            <ScrollView>
+                <CollectionView
+                    x:Name="CvWarehouse"
+                    ItemsSource="{Binding Warehouse, Mode=OneWay}"
+                    SelectedItem="{Binding SelectedInventory, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout
+                            HorizontalItemSpacing="4"
+                            Orientation="Vertical"
+                            Span="{OnIdiom Default=6,
+                                           Phone=1}"
+                            VerticalItemSpacing="4" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:Inventory">
+                            <Border Style="{StaticResource BorderItem}" ToolTipProperties.Text="{OnIdiom Tablet={Binding Article}, Desktop={Binding Article}}">
+                                <FlexLayout
+                                    AlignContent="{OnIdiom Default=Center,
+                                                           Phone=Start}"
+                                    AlignItems="{OnIdiom Default=Center,
+                                                         Phone=Stretch}"
+                                    Direction="{OnIdiom Default=Column,
+                                                        Phone=Row}"
+                                    JustifyContent="{OnIdiom Default=Center,
+                                                             Phone=SpaceBetween}"
+                                    Wrap="{OnIdiom Default=NoWrap,
+                                                   Phone=NoWrap}">
+                                    <Label
+                                        FontSize="Body"
+                                        HorizontalTextAlignment="{OnIdiom Default='Center',
+                                                                          Phone='Start'}"
+                                        LineBreakMode="MiddleTruncation"
+                                        Text="{Binding Article, Mode=OneWay}" />
+                                    <Label
+                                        FontAttributes="Bold"
+                                        FontSize="Subtitle"
+                                        HorizontalTextAlignment="{OnIdiom Default='Center',
+                                                                          Phone='Start'}"
+                                        Text="{Binding Existence, Mode=OneWay, StringFormat='{0:F2}'}" />
+                                </FlexLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <StackLayout
+                                HorizontalOptions="Center"
+                                Spacing="8"
+                                VerticalOptions="Center">
+                                <Image HeightRequest="72" WidthRequest="72">
+                                    <Image.Source>
+                                        <FontImageSource
+                                            FontFamily="icofont"
+                                            Glyph="{StaticResource List}"
+                                            Color="{StaticResource SecondaryDarkText}" />
+                                    </Image.Source>
+                                </Image>
+                                <Label
+                                    FontSize="Body"
+                                    Text="No hay detalles"
+                                    TextColor="{StaticResource SecondaryDarkText}" />
+                            </StackLayout>
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </ScrollView>
+        </Grid>
+        <Grid
+            Grid.Row="1"
+            HorizontalOptions="Fill"
+            IsVisible="{Binding IsDispatchesVisible, Mode=OneWay}">
+            <ScrollView>
+                <CollectionView
+                    x:Name="CvDispatches"
+                    HorizontalScrollBarVisibility="Never"
+                    ItemsSource="{Binding Dispatches, Mode=OneWay}"
+                    SelectedItem="{Binding SelectedDispatch, Mode=TwoWay}"
+                    SelectionMode="Single"
+                    VerticalScrollBarVisibility="Always">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout
+                            HorizontalItemSpacing="4"
+                            Orientation="Vertical"
+                            Span="{OnIdiom Default=2,
+                                           Phone=1}"
+                            VerticalItemSpacing="4" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:DispatchView">
+                            <Border Style="{StaticResource BorderItem}">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label
+                                        FontSize="Body"
+                                        HorizontalTextAlignment="Start"
+                                        LineBreakMode="MiddleTruncation">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Client, Mode=OneWay}" />
+                                                <Span Text=" | " />
+                                                <Span Text="{Binding Date, Mode=OneWay}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label
+                                        FontAttributes="Bold"
+                                        FontSize="Subtitle"
+                                        HorizontalTextAlignment="{OnIdiom Default='Center',
+                                                                          Phone='Start'}"
+                                        Text="{Binding Description, Mode=OneWay}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <StackLayout
+                                HorizontalOptions="Center"
+                                Spacing="8"
+                                VerticalOptions="Center">
+                                <Image HeightRequest="72" WidthRequest="72">
+                                    <Image.Source>
+                                        <FontImageSource
+                                            FontFamily="icofont"
+                                            Glyph="{StaticResource List}"
+                                            Color="{StaticResource SecondaryDarkText}" />
+                                    </Image.Source>
+                                </Image>
+                                <Label
+                                    FontSize="Body"
+                                    Text="No hay detalles"
+                                    TextColor="{StaticResource SecondaryDarkText}" />
+                            </StackLayout>
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </ScrollView>
+        </Grid>
+        <VerticalStackLayout Grid.Row="2" Spacing="16">
+            <Frame Padding="16,12" HorizontalOptions="{OnIdiom Default=Center, Phone=Fill}">
+                <Grid RowDefinitions="auto,auto" RowSpacing="8">
+                    <Label FontSize="Subtitle" Text="Accesos rápidos:" />
+                    <FlexLayout
+                        Grid.Row="1"
+                        AlignContent="{OnIdiom Default=Center,
+                                               Phone=Start}"
+                        AlignItems="{OnIdiom Default=Center,
+                                             Phone=Stretch}"
+                        Direction="{OnIdiom Default=Row,
+                                            Phone=Column}"
+                        JustifyContent="{OnIdiom Default=Center,
+                                                 Phone=Center}"
+                        Wrap="{OnIdiom Default=Wrap,
+                                       Phone=NoWrap}">
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToAgregarCommand}"
+                            Text="Agregar artículo"
+                            ToolTipProperties.Text="Agregar artículo" />
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToDespachoUnicoCommand}"
+                            IsVisible="{Binding SelectedInventory, Mode=OneWay, Converter={ctk:IsNotNullConverter}}"
+                            Text="Despachar artículo"
+                            ToolTipProperties.Text="Despachar artículo seleccionado" />
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding GoToDespachoVariosCommand}"
+                            IsVisible="{Binding Warehouse, Mode=OneWay, Converter={ctk:IsListNotNullOrEmptyConverter}}"
+                            Text="Despachar varios artículos"
+                            ToolTipProperties.Text="Despachar varios artículos" />
+                        <Button
+                            Margin="{OnIdiom Default='2',
+                                             Phone='0,2'}"
+                            Command="{Binding EliminarCommand}"
+                            IsVisible="{Binding SelectedInventory, Mode=OneWay, Converter={ctk:IsNotNullConverter}}"
+                            Text="Eliminar artículo"
+                            ToolTipProperties.Text="Eliminar artículo" />
+                    </FlexLayout>
+                </Grid>
+            </Frame>
+            <Frame Style="{StaticResource FrameFooter}">
+                <Grid>
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                        <Label Style="{StaticResource LabelFooter}" Text="By RandA Media Lab, Group" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>

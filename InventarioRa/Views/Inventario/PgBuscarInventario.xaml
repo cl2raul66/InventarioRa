@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgBuscarInventario"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Buscar en inventario"
+    x:DataType="vm:PgBuscarDespachosViewModel"
+    BackgroundColor="#30000000"
+    BindingContext="{vm:PgBuscarInventarioViewModel}"
+    Shell.PresentationMode="ModalAnimated">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Frame
+        Margin="16"
+        Padding="16"
+        HorizontalOptions="Center"
+        MaximumWidthRequest="620"
+        VerticalOptions="Center">
+        <Grid RowDefinitions="auto,auto,auto" RowSpacing="16">
+            <Frame Style="{StaticResource FrameHeader}">
+                <Label
+                    HorizontalOptions="Center"
+                    Style="{StaticResource LabelHeaderTitle}"
+                    Text="Buscar en despachos" />
+            </Frame>
+            <Grid
+                Grid.Row="1"
+                RowDefinitions="auto,*"
+                RowSpacing="16">
+                <FlexLayout
+                    AlignContent="Start"
+                    AlignItems="Start"
+                    Direction="Column"
+                    JustifyContent="SpaceBetween"
+                    Wrap="Wrap">
+                    <Grid Margin="2,0">
+                        <RadioButton IsChecked="{Binding IsByArticle}" />
+                        <Label
+                            Margin="32,0,0,0"
+                            Text="Por artículo"
+                            VerticalOptions="CenterAndExpand" />
+                    </Grid>
+                </FlexLayout>
+                <ScrollView Grid.Row="1">
+                    <VerticalStackLayout Spacing="8">
+                        <Frame Padding="16" IsVisible="{Binding IsByArticle, Mode=OneWay}">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Nombre: *" />
+                                <Entry Placeholder="Escriba en nombre completo o parte del articulo." Text="{Binding FindByText}" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+            <Frame Grid.Row="2" Padding="8">
+                <VerticalStackLayout Spacing="16">
+                    <Label IsVisible="{Binding VisibleErrorinfo, Mode=OneWay}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontFamily="icofont"
+                                    Text="{StaticResource InfoCircle}"
+                                    TextColor="Red" />
+                                <Span Text="{Binding HasErrorinfo, Mode=OneWay, StringFormat=' {0}'}" TextColor="Red" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Button Command="{Binding BuscarCommand}" Text="Buscar" />
+                    <Button Command="{Binding GoToBackCommand}" Text="Cancelar" />
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Frame>
+
+</ContentPage>

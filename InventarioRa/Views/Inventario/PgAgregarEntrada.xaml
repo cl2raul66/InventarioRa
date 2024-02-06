@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgAgregarEntrada"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Agregar artículo"
+    x:DataType="vm:PgAgregarEntradaViewModel"
+    BackgroundColor="#30000000"
+    BindingContext="{vm:PgAgregarEntradaViewModel}"
+    Shell.PresentationMode="ModalAnimated">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Frame
+        Margin="16"
+        Padding="16"
+        HorizontalOptions="Center"
+        MaximumWidthRequest="620"
+        VerticalOptions="Center">
+        <Grid RowDefinitions="auto,auto,auto" RowSpacing="16">
+            <Frame Style="{StaticResource FrameHeader}">
+                <Label
+                    HorizontalOptions="Center"
+                    Style="{StaticResource LabelHeaderTitle}"
+                    Text="Agregar artículo" />
+            </Frame>
+            <ScrollView Grid.Row="1" MinimumWidthRequest="400">
+                <VerticalStackLayout Spacing="8">
+                    <Frame Padding="16">
+                        <Grid RowDefinitions="auto,auto,auto" RowSpacing="2">
+                            <Label Text="Articulo: *" />
+                            <Entry
+                                Grid.Row="1"
+                                ClearButtonVisibility="WhileEditing"
+                                Placeholder="Escriba aquí"
+                                Text="{Binding Articulo}" />
+                        </Grid>
+                    </Frame>
+                    <Frame Padding="16">
+                        <Grid RowDefinitions="auto,auto,auto" RowSpacing="2">
+                            <Label Text="Cantidad: *" />
+                            <Entry
+                                Grid.Row="1"
+                                ClearButtonVisibility="WhileEditing"
+                                HorizontalTextAlignment="End"
+                                Keyboard="Numeric"
+                                Placeholder="0.00"
+                                Text="{Binding Cantidad}" />
+                        </Grid>
+                    </Frame>
+                </VerticalStackLayout>
+            </ScrollView>
+            <Frame
+                Grid.Row="2"
+                Padding="8"
+                IsVisible="{OnIdiom Default=true,
+                                    Phone=false}">
+                <Grid
+                    Grid.Row="2"
+                    ColumnDefinitions="*, auto"
+                    ColumnSpacing="4">
+                    <Label IsVisible="{Binding VisibleErrorinfo, Mode=OneWay}" VerticalOptions="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontFamily="icofont"
+                                    Text="{StaticResource InfoCircle}"
+                                    TextColor="Red" />
+                                <Span Text=" Favor rellene los requeridos (*)." TextColor="Red" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        Spacing="4"
+                        VerticalOptions="CenterAndExpand">
+                        <Label FontSize="30" Text="|" />
+                        <Button Command="{Binding GoToBackCommand}" Text="Cancelar" />
+                        <Button Command="{Binding GuardarCommand}" Text="Guardar" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </Frame>
+            <Frame
+                Grid.Row="2"
+                Padding="8"
+                IsVisible="{OnIdiom Default=false,
+                                    Phone=true}">
+                <VerticalStackLayout Spacing="16">
+                    <Label IsVisible="{Binding VisibleErrorinfo, Mode=OneWay}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span
+                                    FontFamily="icofont"
+                                    Text="{StaticResource InfoCircle}"
+                                    TextColor="Red" />
+                                <Span Text=" Favor rellene los requeridos (*)." TextColor="Red" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Button Command="{Binding GuardarCommand}" Text="Guardar" />
+                    <Button Command="{Binding GoToBackCommand}" Text="Cancelar" />
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </Frame>
+
+</ContentPage>
