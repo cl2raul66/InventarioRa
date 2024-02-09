@@ -8,16 +8,21 @@ namespace InventarioRa.ViewModels;
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
     readonly IDespachosServicio despachosServ;
+    readonly IApiClientService apiClientServ;
     readonly DateTime ToDay;
 
-    public PgPrincipalViewModel(IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
+    public PgPrincipalViewModel(IApiClientService apiClientService, IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
     {
         ToDay = DateTime.Now;
         despachosServ = despachosServicio;
+        apiClientServ = apiClientService;
         GetUsadas();
         GetVentas();
         totalArticulos = inventarioServicio.TotalStock.ToString("00");
     }
+
+    [ObservableProperty]
+    bool isApiHealthy;
 
     [ObservableProperty]
     string? totalArticulos;
@@ -27,6 +32,12 @@ public partial class PgPrincipalViewModel : ObservableRecipient
 
     [ObservableProperty]
     string? ventas;
+
+    [RelayCommand]
+    async Task GoToAjustes()
+    {
+        await Shell.Current.GoToAsync(nameof(PgAjustes), true);
+    }
 
     [RelayCommand]
     async Task GoToDetalle()
@@ -53,6 +64,9 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     }
 
     #region Extra
+    [RelayCommand]
+    public async Task GetStatusapi() => IsApiHealthy = await apiClientServ.Test();
+
     void GetVentas()
     {
         Ventas = despachosServ.GetAllByDate(FirstDayOfWeek(ToDay), ToDay).Where(x => x.IsSale).Count().ToString("00") ?? "00";
@@ -63,7 +77,8 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         Usadas = despachosServ.GetAllByDate(FirstDayOfWeek(ToDay), ToDay).Where(x => !x.IsSale).Count().ToString("00") ?? "00";
     }
 
-    DateTime FirstDayOfWeek(DateTime? datetime = null) {
+    DateTime FirstDayOfWeek(DateTime? datetime = null)
+    {
         var now = datetime is null ? DateTime.Now : datetime.Value;
         DayOfWeek dayOfWeek = now.DayOfWeek;
         int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;

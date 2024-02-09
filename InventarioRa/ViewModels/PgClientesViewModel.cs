@@ -8,12 +8,20 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgClientesViewModel : ObservableRecipient
 {
-    readonly IClientesServicio clientesServ;
+    readonly IClientesForApiServicio clientesServ;
+    readonly IApiClientService apiClientServ;
+    readonly INotificationApiService notificationApiServ;
 
-    public PgClientesViewModel(IClientesServicio clientesServicio)
+    public PgClientesViewModel(IApiClientService apiClientService, INotificationApiService notificationApiService, IClientesForApiServicio clientesServicio)
     {
+        notificationApiServ = notificationApiService;
+        apiClientServ = apiClientService;
         clientesServ = clientesServicio;
-        GetClients();
+    }
+
+    private async void HandleNotification(string message)
+    {
+        await GetClients();
     }
 
     [ObservableProperty]
@@ -48,7 +56,8 @@ public partial class PgClientesViewModel : ObservableRecipient
             Clients = [];
         }
 
-        bool resultInsert = clientesServ.Insert(new Client { Id = Guid.NewGuid().ToString(), Name = name });
+        bool resultInsert = await clientesServ.CreateClienteAsync(new Client { Id = Guid.NewGuid().ToString(), Name = name });
+
         if (resultInsert)
         {
             Clients!.Add(name);
@@ -58,16 +67,16 @@ public partial class PgClientesViewModel : ObservableRecipient
     [RelayCommand]
     void Eliminar()
     {
-        var id = clientesServ.GetId(SelectedClient!);
-        if (string.IsNullOrEmpty(id))
-        {
-            return;
-        }
-        bool resultRemove = clientesServ.Delete(id);
-        if (resultRemove)
-        {
-            Clients!.Remove(SelectedClient!);
-        }
+        //var id = clientesServ.GetId(SelectedClient!);
+        //if (string.IsNullOrEmpty(id))
+        //{
+        //    return;
+        //}
+        //bool resultRemove = clientesServ.Delete(id);
+        //if (resultRemove)
+        //{
+        //    Clients!.Remove(SelectedClient!);
+        //}
     }
 
     [RelayCommand]
@@ -78,11 +87,26 @@ public partial class PgClientesViewModel : ObservableRecipient
 
 
     #region Extra
-    void GetClients()
+    public async Task InitializeNotificationApi()
     {
-        if (clientesServ.Exist)
+        if (await apiClientServ.Test())
         {
-            Clients = new(clientesServ.GetNames());
+            await notificationApiServ.ConnectAsync();
+            notificationApiServ.OnNotificationReceived += NotificationApiServ_OnNotificationReceived;
+        }
+    }
+
+    private async void NotificationApiServ_OnNotificationReceived(string obj)
+    {
+        await GetClients();
+    }
+
+    async Task GetClients()
+    {
+        if (await clientesServ.ExistAsync())
+        {
+            var names = await clientesServ.GetNames();
+            Clients = new(names);
         }
     }
     #endregion

@@ -21,11 +21,17 @@ public static class MauiProgram
                 fonts.AddFont("icofont.ttf", "icofont");
             });
 
+        builder.Services.AddSingleton<IApiService, ApiService>();
+        //builder.Services.AddSingleton<IApiClientService, ApiClientService>();
+        //builder.Services.AddSingleton<INotificationApiService, NotificationApiService>();
+        builder.Services.AddSingleton<IClientesForApiServicio, ClientesForApiServicio>();
         builder.Services.AddSingleton<IClientesServicio, ClientesServicio>();
         builder.Services.AddSingleton<IInventarioServicio, InventarioServicio>();
         builder.Services.AddSingleton<IDespachosServicio, DespachosServicio>();
 
         builder.Services.AddTransient<PgPrincipal, PgPrincipalViewModel>();
+        builder.Services.AddTransient<PgAjustes, PgAjustesViewModel>();
+        builder.Services.AddTransient<PgConnection, PgConnectionViewModel>();
         builder.Services.AddTransient<PgInventario, PgInventarioViewModel>();
         builder.Services.AddTransient<PgDespachoUnico, PgDespachoUnicoViewModel>();
         builder.Services.AddTransient<PgDespachoVarios, PgDespachoVariosViewModel>();

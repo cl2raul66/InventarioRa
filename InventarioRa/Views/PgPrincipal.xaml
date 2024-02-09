@@ -17,13 +17,13 @@
                     Margin="8,0,0,0"
                     Style="{StaticResource LabelHeaderTitle}"
                     Text="Inicio" />
-                <!--<HorizontalStackLayout Grid.Column="1" Spacing="8">
+                <HorizontalStackLayout Grid.Column="1" Spacing="8">
                     <Button
-                        Command="{Binding GoToAgregarCommand}"
+                        Command="{Binding GoToAjustesCommand}"
                         FontFamily="icofont"
-                        Text="{StaticResource UiAdd}"
-                        ToolTipProperties.Text="Agregar nuevo artículo" />
-                    <Button
+                        Text="{StaticResource UiSettings}"
+                        ToolTipProperties.Text="Ver ajustes" />
+                    <!--<Button
                         Command="{Binding GoToDetalleCommand}"
                         FontFamily="icofont"
                         IsVisible="{OnIdiom Default=true,
@@ -41,17 +41,18 @@
                         IsVisible="{OnIdiom Default=true,
                                             Phone=false}"
                         Text="{StaticResource ContactAdd}"
-                        ToolTipProperties.Text="Ir a clientes" />
-                </HorizontalStackLayout>-->
+                        ToolTipProperties.Text="Ir a clientes" />-->
+                </HorizontalStackLayout>
             </Grid>
         </Frame>
-        <VerticalStackLayout
+        <FlexLayout
             Grid.Row="1"
-            HorizontalOptions="{OnIdiom Default=Center,
-                                        Phone=Fill}"
-            Spacing="8"
-            VerticalOptions="Center">
-            <Frame Padding="10">
+            AlignContent="Start"
+            AlignItems="Start"
+            Direction="Row"
+            JustifyContent="Center"
+            Wrap="NoWrap">
+            <Frame Margin="0,0,8,0" Padding="10">
                 <VerticalStackLayout Spacing="8">
                     <Label FontSize="Subtitle" Text="Inventario" />
                     <Label FontSize="Body">
@@ -67,7 +68,7 @@
                     </Label>
                 </VerticalStackLayout>
             </Frame>
-            <Frame Padding="10">
+            <Frame Margin="0,0,8,0" Padding="10">
                 <VerticalStackLayout Spacing="8">
                     <Label FontSize="Subtitle" Text="Despachos" />
                     <Label FontSize="Body">
@@ -94,7 +95,7 @@
                     </Label>
                 </VerticalStackLayout>
             </Frame>
-        </VerticalStackLayout>
+        </FlexLayout>
         <VerticalStackLayout Grid.Row="2" Spacing="16">
             <Frame
                 Padding="16,12"
@@ -130,17 +131,38 @@
                                              Phone='0,2'}"
                             Command="{Binding GoToAgregarEntradaCommand}"
                             Text="Agregar entrada" />
-                        <!--<Button
-                            Margin="{OnIdiom Default='2',
-                                             Phone='0,2'}"
-                            Command="{Binding GoToDespachoCommand}"
-                            Text="Realizar despacho" />-->
                     </FlexLayout>
                 </Grid>
             </Frame>
             <Frame Style="{StaticResource FrameFooter}">
-                <Grid>
-                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                <Grid ColumnDefinitions="auto,*,auto" RowSpacing="8">
+                    <HorizontalStackLayout Spacing="4">
+                        <Button
+                            Command="{Binding GetStatusapiCommand}"
+                            FontFamily="icofont"
+                            Text="{StaticResource Network}"
+                            ToolTipProperties.Text="¡Click aqui para reconectarse!">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding IsApiHealthy, Mode=OneWay}"
+                                    TargetType="Button"
+                                    Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                                <DataTrigger
+                                    Binding="{Binding IsApiHealthy, Mode=OneWay}"
+                                    TargetType="Button"
+                                    Value="False">
+                                    <Setter Property="BackgroundColor" Value="Red" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="Center"
+                        Spacing="4"
+                        VerticalOptions="CenterAndExpand">
                         <Label Style="{StaticResource LabelFooter}" Text="By RandA Media Lab, Group" />
                     </HorizontalStackLayout>
                 </Grid>

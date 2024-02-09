@@ -10,4 +10,10 @@ public partial class PgClientes : ContentPage
 
 		BindingContext = vm;
 	}
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+		await (BindingContext as PgClientesViewModel)!.InitializeNotificationApi();
+    }
 }

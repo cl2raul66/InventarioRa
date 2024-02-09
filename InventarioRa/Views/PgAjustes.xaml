@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgAjustes"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Ajustes"
+    x:DataType="vm:PgAjustesViewModel"
+    Shell.NavBarIsVisible="False">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Grid
+        Padding="16"
+        RowDefinitions="auto,*,auto"
+        RowSpacing="16">
+        <Frame Style="{StaticResource FrameHeader}">
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="8">
+                <HorizontalStackLayout Spacing="8">
+                    <Button
+                        Command="{Binding BackCommand}"
+                        FontFamily="icofont"
+                        Text="{StaticResource ArrowLeft}" />
+                    <Label
+                        Margin="8,0,0,0"
+                        Style="{StaticResource LabelHeaderTitle}"
+                        Text="Ajustes"
+                        VerticalOptions="CenterAndExpand" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Frame>
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout
+                HorizontalOptions="{OnIdiom Default='Center',
+                                            Phone='Fill'}"
+                MinimumWidthRequest="400"
+                Spacing="16">
+                <Grid RowDefinitions="auto,auto,auto" RowSpacing="8">
+                    <Label FontSize="Subtitle" Text="Conexión:" />
+                    <Button
+                        Grid.Row="1"
+                        Command="{Binding GoToPgConnectionCommand}"
+                        Text="Administrar conexión" />
+                    <Label
+                        Grid.Row="2"
+                        FontSize="Micro"
+                        LineBreakMode="WordWrap"
+                        Text="Establece o modifica la conexión a la base de datos." />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

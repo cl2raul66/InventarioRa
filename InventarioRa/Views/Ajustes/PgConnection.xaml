@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="InventarioRa.Views.PgConnection"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:InventarioRa.Models"
+    xmlns:vm="clr-namespace:InventarioRa.ViewModels"
+    Title="Conexión"
+    x:DataType="vm:PgConnectionViewModel"
+    Shell.PresentationMode="Animated">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior IsVisible="False" />
+    </Shell.BackButtonBehavior>
+
+    <Grid
+        Padding="16"
+        RowDefinitions="auto,*"
+        RowSpacing="16">
+        <Frame Padding="8">
+            <Grid ColumnDefinitions="*,auto" ColumnSpacing="8">
+                <HorizontalStackLayout Spacing="8">
+                    <Button
+                        Command="{Binding GoToBackCommand}"
+                        FontFamily="icofont"
+                        Text="{StaticResource ArrowLeft}" />
+                    <Label
+                        FontSize="Subtitle"
+                        Text="Conexión"
+                        TextColor="{StaticResource Primary}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Grid>
+        </Frame>
+        <VerticalStackLayout
+            Grid.Row="1"
+            Spacing="16"
+            VerticalOptions="Center">
+            <Frame WidthRequest="450">
+                <VerticalStackLayout Spacing="8">
+                    <Label
+                        FontSize="Subtitle"
+                        Text="Servidor:"
+                        TextColor="{StaticResource Primary}" />
+                    <Entry
+                        ClearButtonVisibility="WhileEditing"
+                        Placeholder="http://localhost:5000"
+                        Text="{Binding UrlApi}" />
+                    <Grid ColumnDefinitions="*, auto" ColumnSpacing="8">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label
+                                FontFamily="icofont"
+                                FontSize="Body"
+                                Text="{StaticResource InfoCircle}"
+                                TextColor="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiColor}}"
+                                VerticalOptions="Center" />
+                            <Label
+                                FontSize="Body"
+                                Text="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiText}, TargetNullValue='Conectando...'}"
+                                TextColor="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiColor}}"
+                                VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Button Command="{Binding TestCommand}" Text="Probar" />
+                            <Button
+                                Command="{Binding SaveCommand}"
+                                IsEnabled="{Binding StatusApi, Mode=OneWay}"
+                                Text="Agregar" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
