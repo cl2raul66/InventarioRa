@@ -1,6 +1,7 @@
+using Microsoft.AspNetCore.SignalR;
+using Spectre.Console;
 using InventarioRaServer.Services;
 using InventarioRaServer.Tools;
-using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,15 +16,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.Use(async (context, next) =>
+var hubContext = app.Services.GetService<IHubContext<NotificationHub>>();
+if (hubContext is not null)
 {
-    var hubContext = app.Services.GetService<IHubContext<NotificationHub>>();
-    if (hubContext is not null)
-    {
-        await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", "El servidor está iniciando");
-    }
-    await next.Invoke();
-});
+    AnsiConsole.MarkupLine("[green]El servidor está iniciando[/]");
+    NotificationHub.ServerStatus = "El servidor está iniciando";
+    await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.ServerStatus);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -32,21 +31,24 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllers();
-    
 app.UseEndpoints(endpoints =>
 {
     _ = endpoints.MapHub<NotificationHub>("/serverStatusHub");
 });
+app.MapControllers();
 
-app.Use(async (context, next) =>
+var applicationLifetime = app.Services.GetService<IHostApplicationLifetime>();
+if (applicationLifetime is not null)
 {
-    var hubContext = app.Services.GetService<IHubContext<NotificationHub>>();
-    if (hubContext is not null)
+    applicationLifetime.ApplicationStopping.Register(async () =>
     {
-        await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", "El servidor va a detenerse");
-    }
-    await next.Invoke();
-});
+        if (hubContext is not null)
+        {
+            AnsiConsole.MarkupLine("[red]El servidor va a detenerse[/]");
+            NotificationHub.ServerStatus = "El servidor va a detenerse";
+            await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.ServerStatus);
+        }
+    });
+}
 
 app.Run();

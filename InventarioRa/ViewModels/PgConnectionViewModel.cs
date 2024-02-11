@@ -5,9 +5,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InventarioRa.ViewModels;
 
-public partial class PgConnectionViewModel(IApiClientService apiClientService) : ObservableValidator
+public partial class PgConnectionViewModel(IApiService apiService) : ObservableValidator
 {
-    readonly IApiClientService apiClientServ = apiClientService;
+    readonly IApiService apiServ = apiService;
+
     [ObservableProperty]
     [Required]
     [Url]
@@ -28,12 +29,12 @@ public partial class PgConnectionViewModel(IApiClientService apiClientService) :
             StatusApi = false;
             return;
         }
-        StatusApi = await apiClientServ.Test(UrlApi);
+        StatusApi = await apiServ.TestConnection(UrlApi);
     }
 
     [RelayCommand]
-    async Task Save()
+    void Save()
     {
-        StatusApi = await apiClientServ.SetUrl(UrlApi!);
+        apiServ.SetUrl(UrlApi!);
     }
 }

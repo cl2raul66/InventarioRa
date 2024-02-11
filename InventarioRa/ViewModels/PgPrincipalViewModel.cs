@@ -8,14 +8,14 @@ namespace InventarioRa.ViewModels;
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
     readonly IDespachosServicio despachosServ;
-    readonly IApiClientService apiClientServ;
+    readonly IApiService apiServ;
     readonly DateTime ToDay;
 
-    public PgPrincipalViewModel(IApiClientService apiClientService, IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
+    public PgPrincipalViewModel(IApiService apiService, IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
     {
         ToDay = DateTime.Now;
         despachosServ = despachosServicio;
-        apiClientServ = apiClientService;
+        apiServ = apiService;
         GetUsadas();
         GetVentas();
         totalArticulos = inventarioServicio.TotalStock.ToString("00");
@@ -63,9 +63,35 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         await Shell.Current.GoToAsync(nameof(PgClientes), true);
     }
 
-    #region Extra
     [RelayCommand]
-    public async Task GetStatusapi() => IsApiHealthy = await apiClientServ.Test();
+    public async Task InitializeNotificationApi()
+    {
+        //if (await apiServ.TestConnection())
+        //{
+        //    await apiServ.ConnectAsync();
+        //    apiServ.OnNotificationReceived += ApiServ_OnNotificationReceived;
+        //    IsApiHealthy = true;
+        //    return;
+        //}
+        //IsApiHealthy = false;
+        await apiServ.ConnectAsync();
+        apiServ.OnNotificationReceived += ApiServ_OnNotificationReceived;
+        IsApiHealthy = true;
+    }
+
+    #region Extra
+    private async void ApiServ_OnNotificationReceived(string channel, string message)
+    {
+        switch (channel)
+        {
+            case "ReceiveMessage":
+                Console.WriteLine($"Mensaje recibido: {message}");
+                break;
+            case "ReceiveStatusMessage":
+                IsApiHealthy = await apiServ.TestConnection();
+                break;
+        }
+    }
 
     void GetVentas()
     {

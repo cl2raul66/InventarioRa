@@ -22,8 +22,6 @@ public static class MauiProgram
             });
 
         builder.Services.AddSingleton<IApiService, ApiService>();
-        //builder.Services.AddSingleton<IApiClientService, ApiClientService>();
-        //builder.Services.AddSingleton<INotificationApiService, NotificationApiService>();
         builder.Services.AddSingleton<IClientesForApiServicio, ClientesForApiServicio>();
         builder.Services.AddSingleton<IClientesServicio, ClientesServicio>();
         builder.Services.AddSingleton<IInventarioServicio, InventarioServicio>();

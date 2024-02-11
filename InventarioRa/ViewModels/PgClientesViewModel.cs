@@ -9,13 +9,11 @@ namespace InventarioRa.ViewModels;
 public partial class PgClientesViewModel : ObservableRecipient
 {
     readonly IClientesForApiServicio clientesServ;
-    readonly IApiClientService apiClientServ;
-    readonly INotificationApiService notificationApiServ;
+    readonly IApiService apiServ;
 
-    public PgClientesViewModel(IApiClientService apiClientService, INotificationApiService notificationApiService, IClientesForApiServicio clientesServicio)
+    public PgClientesViewModel(IApiService apiService, IClientesForApiServicio clientesServicio)
     {
-        notificationApiServ = notificationApiService;
-        apiClientServ = apiClientService;
+        apiServ = apiService;
         clientesServ = clientesServicio;
     }
 
@@ -89,16 +87,23 @@ public partial class PgClientesViewModel : ObservableRecipient
     #region Extra
     public async Task InitializeNotificationApi()
     {
-        if (await apiClientServ.Test())
+        if (await apiServ.TestConnection())
         {
-            await notificationApiServ.ConnectAsync();
-            notificationApiServ.OnNotificationReceived += NotificationApiServ_OnNotificationReceived;
+            await apiServ.ConnectAsync();
+            apiServ.OnNotificationReceived += NotificationApiServ_OnNotificationReceived;
         }
     }
 
-    private async void NotificationApiServ_OnNotificationReceived(string obj)
-    {
-        await GetClients();
+    private async void NotificationApiServ_OnNotificationReceived(string channel, string message)
+    {        
+        switch (channel)
+        {
+            case "ReceiveMessage":
+                await GetClients();
+                break;
+            case "ReceiveStatusMessage":
+                break;
+        }
     }
 
     async Task GetClients()

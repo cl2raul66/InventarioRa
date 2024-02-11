@@ -23,10 +23,10 @@ public class ClientesForApiServicio : IClientesForApiServicio
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public ClientesForApiServicio(IApiClientService apiClientService)
+    public ClientesForApiServicio(IApiService apiService)
     {
-        _httpClient = apiClientService.Current();
-        serverUrl = apiClientService.GetServerUrl;
+        _httpClient = apiService.HttpClient;
+        serverUrl = apiService.GetServerUrl;
     }
 
     public async Task<bool> ExistAsync()
