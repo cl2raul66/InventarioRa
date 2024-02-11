@@ -16,6 +16,17 @@ connection.On<string>("ReceiveStatusMessage", (message) =>
     }
 });
 
+connection.Closed += async (error) =>
+{
+    Console.WriteLine($"Conexión cerrada: {error?.Message}");
+    if (connection.State is HubConnectionState.Disconnected || connection.State is HubConnectionState.Reconnecting)
+    {
+        Console.WriteLine("Intentando reconectar en 3 segundos...");
+        await Task.Run(Reconnect);
+    }
+};
+
+
 async void Reconnect()
 {
     while (true)
@@ -37,7 +48,6 @@ async void Reconnect()
         }
     }
 }
-
 
 while (true)
 {
