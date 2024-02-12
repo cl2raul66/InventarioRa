@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Spectre.Console;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var connection = new HubConnectionBuilder()
     .WithUrl("http://localhost:5000/serverStatusHub")
@@ -7,25 +9,35 @@ var connection = new HubConnectionBuilder()
 
 connection.On<string>("ReceiveStatusMessage", (message) =>
 {
-    Console.WriteLine($"Notificación recibida: {message}");
+    AnsiConsole.MarkupLine($"[yellow]Notificación recibida: {message}[/]");
 
     if (message == "El servidor va a detenerse")
     {
-        Console.WriteLine("El servidor se está deteniendo. Intentando reconectar en 3 segundos...");
+        AnsiConsole.MarkupLine("[red]El servidor se está deteniendo. Intentando reconectar en 3 segundos...[/]");
         Reconnect();
     }
 });
 
+connection.On<string>("ReceiveMessage", (message) =>
+{
+    AnsiConsole.MarkupLine($"[yellow]Notificación recibida: {message}[/]");
+});
+
+connection.Reconnected += async (connectionId) =>
+{
+    Console.WriteLine("Cliente conectado. Presiona una tecla para salir.");
+    await Task.CompletedTask;
+};
+
 connection.Closed += async (error) =>
 {
-    Console.WriteLine($"Conexión cerrada: {error?.Message}");
-    if (connection.State is HubConnectionState.Disconnected || connection.State is HubConnectionState.Reconnecting)
+    AnsiConsole.MarkupLine($"[red]Conexión cerrada: {error?.Message}[/]");
+    if (connection.State is HubConnectionState.Disconnected)
     {
         Console.WriteLine("Intentando reconectar en 3 segundos...");
         await Task.Run(Reconnect);
     }
 };
-
 
 async void Reconnect()
 {
@@ -36,13 +48,13 @@ async void Reconnect()
             if (connection.State == HubConnectionState.Disconnected)
             {
                 await connection.StartAsync();
-                Console.WriteLine("Cliente reconectado.");
+                AnsiConsole.MarkupLine("[green]Cliente reconectado.[/]");
                 break;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al reconectar: {ex.Message}");
+            AnsiConsole.MarkupLine($"[red]Error al reconectar: {ex.Message} [/]");
             Console.WriteLine("Intentando reconectar en 3 segundos...");
             await Task.Delay(3000);
         }
@@ -54,12 +66,12 @@ while (true)
     try
     {
         await connection.StartAsync();
-        Console.WriteLine("Cliente conectado. Presiona una tecla para salir.");
+        AnsiConsole.MarkupLine("[green]Cliente conectado. Presiona una tecla para salir.[/]");
         break;
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error al conectar con el servidor: {ex.Message}");
+        AnsiConsole.MarkupLine($"[red]Error al conectar con el servidor: {ex.Message}[/]");
         Console.WriteLine("Intentando reconectar en 3 segundos...");
         await Task.Delay(3000);
     }
