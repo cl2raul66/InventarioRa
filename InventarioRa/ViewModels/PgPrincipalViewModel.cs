@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InventarioRa.Servicios;
 using InventarioRa.Views;
@@ -41,24 +43,64 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     [RelayCommand]
     async Task GoToDetalle()
     {
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            await MensajeIrAjustes();
+            return;
+        }
+        if (!apiServ.IsConnected)
+        {
+            await MensajeReconectar();
+            return;
+        }
         await Shell.Current.GoToAsync(nameof(PgInventario), true);
     }
 
     [RelayCommand]
     async Task GoToDespacho()
     {
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            await MensajeIrAjustes();
+            return;
+        }
+        if (!apiServ.IsConnected)
+        {
+            await MensajeReconectar();
+            return;
+        }
         await Shell.Current.GoToAsync($"{nameof(PgInventario)}/{nameof(PgDespachoVarios)}", true);
     }
 
     [RelayCommand]
     async Task GoToAgregarEntrada()
     {
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            await MensajeIrAjustes();
+            return;
+        }
+        if (!apiServ.IsConnected)
+        {
+            await MensajeReconectar();
+            return;
+        }
         await Shell.Current.GoToAsync($"{nameof(PgInventario)}/{nameof(PgAgregarEntrada)}", true);
     }
 
     [RelayCommand]
     async Task GoToClientes()
     {
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            await MensajeIrAjustes();
+            return;
+        }
+        if (!apiServ.IsConnected)
+        {
+            await MensajeReconectar();
+            return;
+        }
         await Shell.Current.GoToAsync(nameof(PgClientes), true);
     }
 
@@ -110,5 +152,20 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         DayOfWeek dayOfWeek = now.DayOfWeek;
         int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
         return now.AddDays(-daysUntilFirstDayOfWeek);
+    }
+
+    async Task MensajeIrAjustes() => await Shell.Current.DisplayAlert("Alerta", "¡Favor de ingresar una url del servidor de datos!", "Cerrar");
+
+    async Task MensajeReconectar()
+    {
+        CancellationTokenSource cancellationTokenSource = new();
+
+        string text = "¡No hay conexionó con el servidor!";
+        ToastDuration duration = ToastDuration.Short;
+        double fontSize = 14;
+
+        var toast = Toast.Make(text, duration, fontSize);
+
+        await toast.Show(cancellationTokenSource.Token);
     }
 }
