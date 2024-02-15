@@ -1,12 +1,9 @@
 ﻿using CommunityToolkit.Maui;
-using InventarioRa.Models;
 using InventarioRa.Servicios;
 using InventarioRa.ViewModels;
 using InventarioRa.Views;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Hosting;
 using System.Reflection;
 
 namespace InventarioRa;

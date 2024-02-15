@@ -88,7 +88,7 @@ public partial class PgClientesViewModel : ObservableRecipient
     public async Task InitializeNotificationApi()
     {
         await apiServ.ConnectAsync();
-        apiServ.OnNotificationReceived += NotificationApiServ_OnNotificationReceived;
+        apiServ.OnNotificationsReceived += NotificationApiServ_OnNotificationReceived;
     }
 
     private async void NotificationApiServ_OnNotificationReceived(string channel, string message)

@@ -10,7 +10,7 @@ public interface IApiService
     string GetServerUrl { get; }
     HttpClient HttpClient { get; }
 
-    event Action<string, string>? OnNotificationReceived;
+    event Action<string, string>? OnNotificationsReceived;
     bool IsConnected { get; }
 
     Task ConnectAsync();
@@ -20,13 +20,16 @@ public interface IApiService
 public class ApiService : IApiService
 {
     readonly string? key;
-    HubConnection? _connection;
+    HubConnection? connection;
+
+    public event Action<string, string>? OnNotificationsReceived;
+
     public HttpClient HttpClient { get; private set; }
 
     public ApiService(IConfiguration configuration)
     {
         key = configuration.GetSection("Settings")["Key"];
-        HttpClient = new HttpClient
+        HttpClient = new()
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
@@ -42,14 +45,10 @@ public class ApiService : IApiService
                 switch (response.StatusCode)
                 {
                     case HttpStatusCode.OK:
-                        Console.WriteLine("El servidor está saludable.");
                         Preferences.Default.Set(key!, new Uri(new Uri(url), "/serverStatusHub").ToString());
                         return true;
-                    case HttpStatusCode.ServiceUnavailable:
-                        Console.WriteLine("El servidor no está saludable.");
-                        break;
                     default:
-                        Console.WriteLine($"Código de estado desconocido: {response.StatusCode}");
+                        Console.WriteLine($"Error al intentar acceder a la URL: {response.StatusCode}");
                         break;
                 }
             }
@@ -64,50 +63,37 @@ public class ApiService : IApiService
 
     public string GetServerUrl => Preferences.Default.Get(key!, string.Empty);
 
-    public event Action<string, string>? OnNotificationReceived;
-
     public async Task ConnectAsync()
     {
-        if (_connection is null)
+        connection = new HubConnectionBuilder()
+            .WithUrl(GetServerUrl)
+            .WithAutomaticReconnect()
+            .Build();
+
+        connection.On<string>("ReceiveStatusMessage", (message) =>
         {
-            _connection = new HubConnectionBuilder()
-                .WithUrl(GetServerUrl)
-                .WithAutomaticReconnect()
-                .Build();
+            OnNotificationsReceived?.Invoke("ReceiveStatusMessage", message);
+        });
 
-            _connection.On<string>("ReceiveStatusMessage", async (message) =>
-            {
-                if (message == "El servidor va a detenerse")
-                {
-                    await Reconnect();
-                }
-            });
-
-            _connection.Reconnected += async (connectionId) =>
-            {
-                await Task.CompletedTask;
-            };
-
-            _connection.Closed += async (error) =>
-            {
-                if (_connection.State is HubConnectionState.Disconnected)
-                {
-                    await Reconnect();
-                }
-            };
-        }
-
-        if (_connection.State is HubConnectionState.Disconnected)
+        connection.On<string>("ReceiveMessage", (message) =>
         {
-            await _connection.StartAsync();
-            // Notificar al usuario
-            OnNotificationReceived?.Invoke("Conexión", "Cliente conectado.");
-        }
+            OnNotificationsReceived?.Invoke("ReceiveMessage", message);
+        });
+
+        connection.Closed += async (error) =>
+        {
+            if (connection.State is HubConnectionState.Disconnected)
+            {
+                await Task.Run(Reconnect);
+            }
+        };
+
+        await Reconnect();
     }
 
     private async Task Reconnect()
     {
-        if (_connection is null)
+        if (connection is null)
         {
             return;
         }
@@ -116,9 +102,9 @@ public class ApiService : IApiService
         {
             try
             {
-                if (_connection.State == HubConnectionState.Disconnected)
+                if (connection.State is HubConnectionState.Disconnected)
                 {
-                    await _connection.StartAsync();
+                    await connection.StartAsync();
                     break;
                 }
             }
@@ -129,5 +115,5 @@ public class ApiService : IApiService
         }
     }
 
-    public bool IsConnected => _connection?.State is HubConnectionState.Connected;
+    public bool IsConnected => connection?.State is HubConnectionState.Connected;
 }

@@ -15,12 +15,9 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     public PgPrincipalViewModel(IApiService apiService, IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
     {
         ToDay = DateTime.Now;
-        despachosServ = despachosServicio;
         apiServ = apiService;
-        GetUsadas();
-        GetVentas();
-        totalArticulos = inventarioServicio.TotalStock.ToString("00");
-        InitializeNotificationApi();
+        inventarioServ = inventarioServicio;
+        despachosServ = despachosServicio;
     }
 
     [ObservableProperty]
@@ -74,7 +71,7 @@ public partial class PgPrincipalViewModel : ObservableRecipient
             return;
         }
         await apiServ.ConnectAsync();
-        apiServ.OnNotificationReceived += ApiServ_OnNotificationReceived;
+        apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
         IsApiHealthy = apiServ.IsConnected;
     }
 

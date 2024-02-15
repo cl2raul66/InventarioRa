@@ -60,9 +60,9 @@
                             <FormattedString>
                                 <Span
                                     FontAttributes="Bold"
-                                    Text="Cantidad de productos: "
+                                    Text="Total de productos: "
                                     TextColor="{StaticResource Tertiary}" />
-                                <Span Text="{Binding TotalArticulos, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding TotalArticulos, Mode=OneWay, TargetNullValue='0'}" TextColor="{StaticResource Tertiary}" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
@@ -78,7 +78,7 @@
                                     FontAttributes="Bold"
                                     Text="Para ventas: "
                                     TextColor="{StaticResource Tertiary}" />
-                                <Span Text="{Binding Ventas, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding Ventas, Mode=OneWay, TargetNullValue='0'}" TextColor="{StaticResource Tertiary}" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
@@ -89,7 +89,7 @@
                                     FontAttributes="Bold"
                                     Text="Para uso: "
                                     TextColor="{StaticResource Tertiary}" />
-                                <Span Text="{Binding Usadas, Mode=OneWay}" TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding Usadas, Mode=OneWay, TargetNullValue='0'}" TextColor="{StaticResource Tertiary}" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
