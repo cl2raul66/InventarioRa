@@ -1,8 +1,13 @@
 ﻿using CommunityToolkit.Maui;
+using InventarioRa.Models;
 using InventarioRa.Servicios;
 using InventarioRa.ViewModels;
 using InventarioRa.Views;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Hosting;
+using System.Reflection;
 
 namespace InventarioRa;
 
@@ -11,6 +16,7 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
@@ -20,6 +26,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFont("icofont.ttf", "icofont");
             });
+
+        builder.AddAppsettings();
 
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<IClientesForApiServicio, ClientesForApiServicio>();
@@ -43,5 +51,19 @@ public static class MauiProgram
 #endif
 
         return builder.Build();
+    }
+
+    private static void AddAppsettings(this MauiAppBuilder builder)
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using Stream stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json")!;
+        if (stream is not null)
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonStream(stream)
+                .Build();
+            builder.Configuration.AddConfiguration(config);
+        }
+
     }
 }

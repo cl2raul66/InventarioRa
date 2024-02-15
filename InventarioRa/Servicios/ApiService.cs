@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace InventarioRa.Servicios;
 
@@ -9,108 +11,123 @@ public interface IApiService
     HttpClient HttpClient { get; }
 
     event Action<string, string>? OnNotificationReceived;
+    bool IsConnected { get; }
 
     Task ConnectAsync();
-    void SetUrl([Url] string url);
-    Task<bool> TestConnection(string? url = null);
+    Task<bool> SetUrl([Url] string url);
 }
 
 public class ApiService : IApiService
 {
-    readonly string key = "D86B1695D10443D0979C5F39DE7801A2";
-    public HttpClient HttpClient { get; private set; }
+    readonly string? key;
     HubConnection? _connection;
+    public HttpClient HttpClient { get; private set; }
 
-    public ApiService()
+    public ApiService(IConfiguration configuration)
     {
-        HttpClient = new HttpClient();
+        key = configuration.GetSection("Settings")["Key"];
+        HttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
     }
 
-    public void SetUrl([Url] string url)
+    public async Task<bool> SetUrl([Url] string url)
     {
         if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
         {
-            Preferences.Default.Set(key, url);
-        }
-    }
-
-    public string GetServerUrl => Preferences.Default.Get(key, string.Empty);
-
-    public async Task<bool> TestConnection(string? url = null)
-    {
-        if (string.IsNullOrEmpty(url))
-        {
-            url = GetServerUrl;
-        }
-
-        HubConnection? connection = null;
-        try
-        {
-            // Crear una nueva conexión al hub de SignalR
-            connection = new HubConnectionBuilder()
-                .WithUrl($"{url}/serverStatusHub")
-                .WithAutomaticReconnect()
-                .Build();
-
-            // Crear un CancellationToken con un tiempo de espera de 5 segundos
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-            // Iniciar la conexión
-            await connection.StartAsync(cts.Token);
-
-            // Si la conexión se inició correctamente, entonces el servidor está en línea
-            var r = connection.State is HubConnectionState.Connected;
-            return r;
-        }
-        catch (OperationCanceledException)
-        {
-            // La operación fue cancelada porque se agotó el tiempo de espera
-            Console.WriteLine("No se pudo conectar al servidor: se agotó el tiempo de espera.");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            var r = ex is null;
-            var t = ex.GetType;
-            var m = ex.Message;
-            var s = ex.Source;
-            var d = ex.Data;
-            Console.WriteLine($"No se pudo conectar al servidor: {ex.Message}");
-            return false;
-        }
-        finally
-        {
-            // Cerrar la conexión
-            if (connection is not null)
+            try
             {
-                await connection.StopAsync();
-                await connection.DisposeAsync();
+                var response = await HttpClient.GetAsync(new Uri(new Uri(url), "/healthchecks").ToString());
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        Console.WriteLine("El servidor está saludable.");
+                        Preferences.Default.Set(key!, new Uri(new Uri(url), "/serverStatusHub").ToString());
+                        return true;
+                    case HttpStatusCode.ServiceUnavailable:
+                        Console.WriteLine("El servidor no está saludable.");
+                        break;
+                    default:
+                        Console.WriteLine($"Código de estado desconocido: {response.StatusCode}");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al intentar acceder a la URL: {ex.Message}");
             }
         }
+
+        return false;
     }
+
+    public string GetServerUrl => Preferences.Default.Get(key!, string.Empty);
 
     public event Action<string, string>? OnNotificationReceived;
 
     public async Task ConnectAsync()
     {
-        if (!string.IsNullOrEmpty(GetServerUrl))
+        if (_connection is null)
         {
             _connection = new HubConnectionBuilder()
                 .WithUrl(GetServerUrl)
                 .WithAutomaticReconnect()
                 .Build();
 
-            _connection.On<string>("ReceiveMessage", (message) =>
+            _connection.On<string>("ReceiveStatusMessage", async (message) =>
             {
-                OnNotificationReceived?.Invoke("ReceiveMessage", message);
+                if (message == "El servidor va a detenerse")
+                {
+                    await Reconnect();
+                }
             });
 
-            _connection.On<string>("ReceiveStatusMessage", (message) =>
+            _connection.Reconnected += async (connectionId) =>
             {
-                OnNotificationReceived?.Invoke("ReceiveStatusMessage", message);
-            });
+                await Task.CompletedTask;
+            };
 
+            _connection.Closed += async (error) =>
+            {
+                if (_connection.State is HubConnectionState.Disconnected)
+                {
+                    await Reconnect();
+                }
+            };
+        }
+
+        if (_connection.State is HubConnectionState.Disconnected)
+        {
             await _connection.StartAsync();
+            // Notificar al usuario
+            OnNotificationReceived?.Invoke("Conexión", "Cliente conectado.");
         }
     }
+
+    private async Task Reconnect()
+    {
+        if (_connection is null)
+        {
+            return;
+        }
+
+        while (true)
+        {
+            try
+            {
+                if (_connection.State == HubConnectionState.Disconnected)
+                {
+                    await _connection.StartAsync();
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                await Task.Delay(3000);
+            }
+        }
+    }
+
+    public bool IsConnected => _connection?.State is HubConnectionState.Connected;
 }

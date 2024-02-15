@@ -8,6 +8,7 @@ namespace InventarioRa.ViewModels;
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
     readonly IDespachosServicio despachosServ;
+    readonly IInventarioServicio inventarioServ;
     readonly IApiService apiServ;
     readonly DateTime ToDay;
 
@@ -19,6 +20,7 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         GetUsadas();
         GetVentas();
         totalArticulos = inventarioServicio.TotalStock.ToString("00");
+        InitializeNotificationApi();
     }
 
     [ObservableProperty]
@@ -66,29 +68,31 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     [RelayCommand]
     public async Task InitializeNotificationApi()
     {
-        //if (await apiServ.TestConnection())
-        //{
-        //    await apiServ.ConnectAsync();
-        //    apiServ.OnNotificationReceived += ApiServ_OnNotificationReceived;
-        //    IsApiHealthy = true;
-        //    return;
-        //}
-        //IsApiHealthy = false;
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            IsApiHealthy = false;
+            return;
+        }
         await apiServ.ConnectAsync();
         apiServ.OnNotificationReceived += ApiServ_OnNotificationReceived;
-        IsApiHealthy = true;
+        IsApiHealthy = apiServ.IsConnected;
     }
 
-    #region Extra
-    private async void ApiServ_OnNotificationReceived(string channel, string message)
+    private void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
         {
             case "ReceiveMessage":
                 Console.WriteLine($"Mensaje recibido: {message}");
+                if (message.Contains("ha sido agregado") || message.Contains("ha sido eliminado"))
+                {
+                    GetUsadas();
+                    GetVentas();
+                    totalArticulos = inventarioServ.TotalStock.ToString("00");
+                }
                 break;
             case "ReceiveStatusMessage":
-                IsApiHealthy = await apiServ.TestConnection();
+                IsApiHealthy = message == "El servidor está iniciando";
                 break;
         }
     }
@@ -110,5 +114,4 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
         return now.AddDays(-daysUntilFirstDayOfWeek);
     }
-    #endregion
 }

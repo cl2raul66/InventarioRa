@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.SignalR;
 using Spectre.Console;
 using InventarioRaServer.Services;
 using InventarioRaServer.Tools;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -34,13 +37,20 @@ app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
     _ = endpoints.MapHub<NotificationHub>("/serverStatusHub");
+    _ = endpoints.MapHealthChecks("/healthchecks", new HealthCheckOptions
+    {
+        ResultStatusCodes =
+        {
+            [HealthStatus.Healthy] = StatusCodes.Status200OK,
+            [HealthStatus.Degraded] = StatusCodes.Status200OK,
+            [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+        }
+    });
 });
 app.MapControllers();
 
 var applicationLifetime = app.Services.GetService<IHostApplicationLifetime>();
-if (applicationLifetime is not null)
-{
-    applicationLifetime.ApplicationStopping.Register(async () =>
+applicationLifetime?.ApplicationStopping.Register(async () =>
     {
         if (hubContext is not null)
         {
@@ -49,6 +59,5 @@ if (applicationLifetime is not null)
             await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.ServerStatus);
         }
     });
-}
 
 app.Run();

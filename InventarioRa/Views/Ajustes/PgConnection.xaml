@@ -50,14 +50,42 @@
                             <Label
                                 FontFamily="icofont"
                                 FontSize="Body"
-                                Text="{StaticResource InfoCircle}"
-                                TextColor="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiColor}}"
-                                VerticalOptions="Center" />
-                            <Label
-                                FontSize="Body"
-                                Text="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiText}, TargetNullValue='Conectando...'}"
-                                TextColor="{Binding StatusApi, Mode=OneWay, Converter={StaticResource StatusApiColor}}"
-                                VerticalOptions="Center" />
+                                VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding StatusApi, Mode=OneWay}"
+                                        TargetType="Label"
+                                        Value="true">
+                                        <Setter Property="Text" Value="{StaticResource CheckCircled}" />
+                                        <Setter Property="TextColor" Value="{StaticResource Tertiary}" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding StatusApi, Mode=OneWay}"
+                                        TargetType="Label"
+                                        Value="false">
+                                        <Setter Property="Text" Value="{StaticResource NotAllowed}" />
+                                        <Setter Property="TextColor" Value="Red" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label FontSize="Body" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding StatusApi, Mode=OneWay}"
+                                        TargetType="Label"
+                                        Value="true">
+                                        <Setter Property="Text" Value="Permitido" />
+                                        <Setter Property="TextColor" Value="{StaticResource Tertiary}" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding StatusApi, Mode=OneWay}"
+                                        TargetType="Label"
+                                        Value="false">
+                                        <Setter Property="Text" Value="Denegado" />
+                                        <Setter Property="TextColor" Value="Red" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
                         </HorizontalStackLayout>
                         <HorizontalStackLayout Grid.Column="1" Spacing="8">
                             <Button Command="{Binding TestCommand}" Text="Probar" />
