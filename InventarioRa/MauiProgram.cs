@@ -28,9 +28,8 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<IClientesForApiServicio, ClientesForApiServicio>();
-        builder.Services.AddSingleton<IClientesServicio, ClientesServicio>();
-        builder.Services.AddSingleton<IInventarioServicio, InventarioServicio>();
-        builder.Services.AddSingleton<IDespachosServicio, DespachosServicio>();
+        builder.Services.AddSingleton<IInventarioForApiServicio, InventarioForApiServicio>();
+        builder.Services.AddSingleton<IDespachosForApiServicio, DespachosForApiServicio>();
 
         builder.Services.AddTransient<PgPrincipal, PgPrincipalViewModel>();
         builder.Services.AddTransient<PgAjustes, PgAjustesViewModel>();

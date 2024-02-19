@@ -20,10 +20,6 @@ public partial class PgClientesViewModel : ObservableRecipient
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
     }
 
-    //private async void HandleNotification(string message)
-    //{
-    //    await GetClients();
-    //}
     [ObservableProperty]
     bool isApiHealthy;
 
@@ -41,7 +37,6 @@ public partial class PgClientesViewModel : ObservableRecipient
         {
             if (result == string.Empty)
             {
-                //await Shell.Current.DisplayAlert("Error", "Debe poner un nombre, vuelva a intentar", "Cerrar");
                 await MensajeAlInsertar("Debe poner un nombre, vuelva a intentar");
             }
             return;
@@ -51,7 +46,6 @@ public partial class PgClientesViewModel : ObservableRecipient
 
         if (Clients!.Any(x => x.Name == name))
         {
-            //await Shell.Current.DisplayAlert("Error", "Ya existe ese nombre, favor coloque otro", "Cerrar");
             await MensajeAlInsertar("Ya existe ese nombre, favor coloque otro");
             return;
         }
@@ -62,11 +56,6 @@ public partial class PgClientesViewModel : ObservableRecipient
         }
         Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
         _ = await clientesServ.CreateClienteAsync(newClient);
-
-        //if (resultInsert)
-        //{
-        //    Clients!.Add(newClient);
-        //}
     }
 
     [RelayCommand]

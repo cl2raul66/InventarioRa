@@ -78,4 +78,16 @@ public class DespachosController : ControllerBase
     {
         return Ok(_despachosServicio.GetAllByDate(startDate, endDate));
     }
+
+    [HttpGet("allInventoryIds")]
+    public IActionResult GetAllInventoryIds()
+    {
+        return Ok(_despachosServicio.GetAllInventoryId());
+    }
+
+    [HttpGet("exist")]
+    public IActionResult Exist()
+    {
+        return Ok(_despachosServicio.Exist);
+    }
 }

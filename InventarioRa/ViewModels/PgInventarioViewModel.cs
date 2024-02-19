@@ -11,18 +11,23 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgInventarioViewModel : ObservableRecipient
 {
-    readonly IInventarioServicio inventarioServ;
-    readonly IClientesServicio clientesServ;
-    readonly IDespachosServicio despachosServ;
+    readonly IApiService apiServ;
+    readonly IInventarioForApiServicio inventarioServ;
+    readonly IClientesForApiServicio clientesServ;
+    readonly IDespachosForApiServicio despachosServ;
 
-    public PgInventarioViewModel(IClientesServicio clientesServicio, IInventarioServicio inventarioServicio,  IDespachosServicio despachosServicio)
+    public PgInventarioViewModel(IApiService apiService, IClientesForApiServicio clientesServicio, IInventarioForApiServicio inventarioServicio, IDespachosForApiServicio despachosServicio)
     {
         IsActive = true;
+        apiServ = apiService;
         inventarioServ = inventarioServicio;
         clientesServ = clientesServicio;
         despachosServ = despachosServicio;
-        Verinventario();
+        apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
     }
+
+    [ObservableProperty]
+    bool isApiHealthy;
 
     [ObservableProperty]
     bool isWarehouseVisible;
@@ -46,7 +51,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     bool itsFilteredVisisble;
 
     [RelayCommand]
-    async Task VerFiltrar()
+    public async Task VerFiltrar()
     {
         ItsFilteredVisisble = !ItsFilteredVisisble;
         if (ItsFilteredVisisble)
@@ -57,7 +62,12 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             if (IsDispatchesVisible)
             {
-                var articles = (from e in despachosServ.GetAllInventoryId() select inventarioServ.GetById(e)).Select(x=>new ArticleInventory { InventoryId = x.Id, Article = x.Article }).ToList();
+                var inventoryIds = await despachosServ.GetAllInventoryIdsAsync();
+                var articles = await Task.WhenAll(inventoryIds!.Select(async id =>
+                {
+                    var inventory = await inventarioServ.GetByIdAsync(id);
+                    return new ArticleInventory { InventoryId = inventory!.Id, Article = inventory.Article };
+                }));
                 await Shell.Current.GoToAsync(nameof(PgBuscarDespachos), true, new Dictionary<string, object> { { "articles", articles } });
             }
         }
@@ -65,14 +75,15 @@ public partial class PgInventarioViewModel : ObservableRecipient
         {
             if (IsWarehouseVisible)
             {
-                GetWarehouse();
+                await GetWarehouse();
             }
             if (IsDispatchesVisible)
             {
-                GetDispatch();
+                await GetDispatch();
             }
         }
     }
+
 
     [RelayCommand]
     async Task GoToBack()
@@ -86,7 +97,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
         var si = new Inventory { Id = SelectedInventory!.Id, Article = SelectedInventory!.Article, Existence = SelectedInventory!.Existence };
         SelectedInventory = null;
         bool isSale = await Shell.Current.DisplayAlert("Tipo de despacho?", "Es venta pública", "Si", "No");
-        Dictionary<string, string> clients = clientesServ.GetAll().ToDictionary(x => x.Id!, x => x.Name!);
+        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync()).ToDictionary(x => x.Id!, x => x.Name!);
         Dictionary<string, object> sendObjects = new()
         {
             {"issale", isSale},
@@ -100,7 +111,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     async Task GoToDespachoVarios()
     {
         bool isSale = await Shell.Current.DisplayAlert("Tipo de despacho?", "Es venta pública", "Si", "No");
-        Dictionary<string, string> clients = clientesServ.GetAll().ToDictionary(x => x.Id!, x => x.Name!);
+        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync()).ToDictionary(x => x.Id!, x => x.Name!);
         Dictionary<string, string> inventory = Warehouse!.ToDictionary(x => x.Id!, x => x.Article!);
         Dictionary<string, object> sendObjects = new()
         {
@@ -123,7 +134,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
         bool isOk = await Shell.Current.DisplayAlert("Precaución?", $"¿Seguro de eliminar {SelectedInventory!.Article}?", "Si", "No");
         if (isOk)
         {
-            bool resul = inventarioServ.Delete(SelectedInventory.Id!);
+            bool resul = await inventarioServ.DeleteAsync(SelectedInventory.Id!);
             if (resul)
             {
                 Warehouse!.Remove(SelectedInventory);
@@ -132,22 +143,22 @@ public partial class PgInventarioViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    void Verinventario()
+    async Task Verinventario()
     {
         ItsFilteredVisisble = false;
         SelectedDispatch = null;
-        GetWarehouse();
+        await GetWarehouse();
         IsDispatchesVisible = false;
         IsWarehouseVisible = true;
         Dispatches = null;
     }
 
     [RelayCommand]
-    void Verdespachachos()
+    async Task Verdespachachos()
     {
         ItsFilteredVisisble = false;
         SelectedInventory = null;
-        GetDispatch();
+        await GetDispatch();
         IsWarehouseVisible = false;
         IsDispatchesVisible = true;
         Warehouse = null;
@@ -157,98 +168,98 @@ public partial class PgInventarioViewModel : ObservableRecipient
     {
         base.OnActivated();
         //Para entrada de artículos
-        WeakReferenceMessenger.Default.Register<PgInventarioViewModel, SendArticleentryChangedMessage>(this, (r, m) =>
+        WeakReferenceMessenger.Default.Register<PgInventarioViewModel, SendArticleentryChangedMessage>(this, async (r, m) =>
         {
             Warehouse ??= [];
             Inventory? existingInventoryItem = Warehouse.FirstOrDefault(x => x.Article == m.Value.Name);
             if (existingInventoryItem is not null)
             {
-                Inventory theInventoryItem = inventarioServ.GetById(existingInventoryItem.Id!)!;
-                theInventoryItem.Existence += m.Value.Amount;
-                bool result = inventarioServ.Update(theInventoryItem);
-                if (result)
-                {
-                    GetWarehouse();
-                }
+                Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(existingInventoryItem.Id!))!;
+                theInventoryItem!.Existence += m.Value.Amount;
+                _ = await inventarioServ.UpdateAsync(theInventoryItem);
+                //if (result)
+                //{
+                //    await GetWarehouse();
+                //}
             }
             else
             {
                 Inventory newInventory = new() { Id = Guid.NewGuid().ToString(), Article = m.Value.Name, Existence = m.Value.Amount };
-                bool result = inventarioServ.Insert(newInventory);
-                if (result)
-                {
-                    GetWarehouse();
-                }
+                _ = await inventarioServ.CreateAsync(newInventory);
+                //if (result)
+                //{
+                //    await GetWarehouse();
+                //}
             }
         });
 
         //Para despacho de artículo único 
-        WeakReferenceMessenger.Default.Register<SendDispatchChangedMessage, string>(this, "unico", (r, m) =>
+        WeakReferenceMessenger.Default.Register<SendDispatchChangedMessage, string>(this, "unico", async (r, m) =>
         {
             var getArticle = m.Value.Articles!.First();
-            Inventory theInventoryItem = inventarioServ.GetById(getArticle.Key!)!;
+            Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(getArticle.Key!))!;
             theInventoryItem.Existence -= getArticle.Value;
-            if (clientesServ.GetById(m.Value.ClientId!) is null)
+            if ((await clientesServ.GetClienteByIdAsync(m.Value.ClientId!)) is null)
             {
                 Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = m.Value.ClientId! };
-                var result = clientesServ.Insert(newClient);
+                var result = await clientesServ.CreateClienteAsync(newClient);
                 if (result)
                 {
                     m.Value.ClientId = newClient.Id;
                 }
             }
-            bool resultUpdate = inventarioServ.Update(theInventoryItem);
+            bool resultUpdate = await inventarioServ.UpdateAsync(theInventoryItem);
             if (resultUpdate)
             {
-                bool result = despachosServ.Insert(m.Value);
-                if (result)
-                {
-                    GetWarehouse();
-                }
+                _ = await despachosServ.CreateDespachoAsync(m.Value);
+                //if (result)
+                //{
+                //    await GetWarehouse();
+                //}
             }
         });
 
         //Para despacho de artículo varios 
-        WeakReferenceMessenger.Default.Register<SendDispatchChangedMessage, string>(this, "varios", (r, m) =>
+        WeakReferenceMessenger.Default.Register<SendDispatchChangedMessage, string>(this, "varios", async (r, m) =>
         {
-            if (clientesServ.GetById(m.Value.ClientId!) is null)
+            if ((await clientesServ.GetClienteByIdAsync(m.Value.ClientId!)) is null)
             {
                 Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = m.Value.ClientId! };
-                var resultInsertClient = clientesServ.Insert(newClient);
+                var resultInsertClient = await clientesServ.CreateClienteAsync(newClient);
                 if (resultInsertClient)
                 {
                     m.Value.ClientId = newClient.Id;
                 }
             }
-            bool result = despachosServ.Insert(m.Value);
+            bool result = await despachosServ.CreateDespachoAsync(m.Value);
             if (result)
             {
-                bool resultUpdate = false;
+                //bool resultUpdate = false;
                 foreach (var item in m.Value.Articles!)
                 {
                     var getArticle = item;
-                    Inventory theInventoryItem = inventarioServ.GetById(getArticle.Key!)!;
+                    Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(getArticle.Key!))!;
                     theInventoryItem.Existence -= getArticle.Value;
-                    resultUpdate = inventarioServ.Update(theInventoryItem);
+                    _ = await inventarioServ.UpdateAsync(theInventoryItem);
                 }
-                if (resultUpdate)
-                {
-                    GetWarehouse();
-                }
+                //if (resultUpdate)
+                //{
+                //    await GetWarehouse();
+                //}
             }
         });
 
         //Para buscar en Inventario
-        WeakReferenceMessenger.Default.Register<SearchInventoryForSearchChangedMessage>(this, (r, m) =>
+        WeakReferenceMessenger.Default.Register<SearchInventoryForSearchChangedMessage>(this, async (r, m) =>
         {
             SelectedInventory = null;
 
-            var result = inventarioServ.GetByArticle(m.Value);
+            var result = await inventarioServ.GetByArticleAsync(m.Value);
             Warehouse = result is not null ? new(result) : null;
         });
 
         //Para buscar en Despacho
-        WeakReferenceMessenger.Default.Register<SendDispatchForSearchChangedMessage>(this, (r, m) =>
+        WeakReferenceMessenger.Default.Register<SendDispatchForSearchChangedMessage>(this, async (r, m) =>
         {
             SelectedDispatch = null;
             DispatchForSearch entity = m.Value;
@@ -257,10 +268,10 @@ public partial class PgInventarioViewModel : ObservableRecipient
             if (isStartDate)
             {
                 entity.EndDate ??= DateTime.Now;
-                var resultDispatch = despachosServ.GetAllByDate((DateTime)entity.StartDate!, (DateTime)entity.EndDate!);
+                var resultDispatch = await despachosServ.GetAllByDateAsync((DateTime)entity.StartDate!, (DateTime)entity.EndDate!);
                 if (resultDispatch is not null)
                 {
-                    GetDispatch(resultDispatch!);
+                    await GetDispatch(resultDispatch!);
                 }
                 else
                 {
@@ -269,10 +280,10 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             else if (entity.Article is not null) //buscar por articulo
             {
-                var resultDispatch = despachosServ.GetAllByInventoryId(entity.Article.InventoryId!);
+                var resultDispatch = await despachosServ.GetAllByInventoryIdAsync(entity.Article.InventoryId!);
                 if (resultDispatch is not null)
                 {
-                    GetDispatch(resultDispatch!);
+                    await GetDispatch(resultDispatch!);
                 }
                 else
                 {
@@ -281,12 +292,15 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             else //buscar por cliente
             {
-                string? resultClientId = clientesServ.GetId(entity.Client);
-
-                var resultDispatch = despachosServ.GetAllByClientId(resultClientId);
+                string? resultClientId = (await clientesServ.GetAllClientesAsync()).Where(x => x.Name!.ToLower() ==  entity.Client!.ToLower())?.FirstOrDefault()?.Id;
+                if (string.IsNullOrEmpty(resultClientId))
+                {
+                    Dispatches = null;
+                }
+                var resultDispatch = await despachosServ.GetAllByClientIdAsync(resultClientId!);
                 if (resultDispatch is not null)
                 {
-                    GetDispatch(resultDispatch!);
+                    await GetDispatch(resultDispatch!);
                 }
                 else
                 {
@@ -297,20 +311,55 @@ public partial class PgInventarioViewModel : ObservableRecipient
     }
 
     #region Extra
-    void GetWarehouse()
+    private async void ApiServ_OnNotificationReceived(string channel, string message)
     {
-        if (inventarioServ.Exist)
+        switch (channel)
         {
-            Warehouse = new(inventarioServ.GetAll().OrderBy(x => x.Article));
+            case "ReceiveMessage":
+                Console.WriteLine($"Mensaje recibido: {message}");
+                if (IsWarehouseVisible && (
+                    message.Contains("Un nuevo inventario ha sido agregado") 
+                    || message.Contains("Un inventario ha sido actualizado")
+                    || message.Contains("Un inventario ha sido eliminado")))
+                {
+                    await GetWarehouse();
+                }
+                if (IsDispatchesVisible && (
+                    message.Contains("Un nuevo despacho ha sido agregado") 
+                    || message.Contains("Un despacho ha sido eliminado")))
+                {
+                    await GetDispatch();
+                }
+                break;
+            case "ReceiveStatusMessage":
+                IsApiHealthy = message == "El servidor está iniciando";
+                break;
+        }
+    }
+    async Task GetWarehouse()
+    {
+        if (await inventarioServ.ExistAsync())
+        {
+            Warehouse = new((await inventarioServ.GetAllAsync()).OrderBy(x => x.Article));
         }
     }
 
-    void GetDispatch(IEnumerable<Dispatch>? getDispatches = null)
+    public async Task GetDispatch(IEnumerable<Dispatch>? getDispatches = null)
     {
-        if (despachosServ.Exist)
+        if (await despachosServ.ExistAsync())
         {
-            getDispatches ??= despachosServ.GetAll();
-            Dispatches = new(getDispatches!.Select(x => new DispatchView { DispatchId = x.Id!, Date = x.Date.ToShortDateString(), Client = string.IsNullOrEmpty(x.ClientId) ? "NONE" : clientesServ.GetById(x.ClientId!)?.Name ?? "NONE", Description = string.Join(", ", x.Articles!.Select(x => $"{inventarioServ.GetById(x.Key)!.Article} ({x.Value})")) }).OrderBy(x => x.Date));
+            getDispatches ??= await despachosServ.GetAllDespachosAsync();
+            var transformTasks = getDispatches!.Select(async x => new DispatchView
+            {
+                DispatchId = x.Id!,
+                Date = x.Date.ToShortDateString(),
+                Client = string.IsNullOrEmpty(x.ClientId)
+                    ? "NONE"
+                    : (await clientesServ.GetClienteByIdAsync(x.ClientId!))?.Name ?? "NONE",
+                Description = string.Join(", ", x.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))
+            });
+            var transform = await Task.WhenAll(transformTasks);
+            Dispatches = new(transform.OrderBy(x => x.Date));
         }
     }
     #endregion

@@ -34,8 +34,14 @@ public class ClientesForApiServicio : IClientesForApiServicio
     public async Task<bool> ExistAsync()
     {
         var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes/Exist"));
-        response.EnsureSuccessStatusCode();
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
+        }
+        return false;
+        //response.EnsureSuccessStatusCode();
+        //return response.IsSuccessStatusCode;
     }
 
     public async Task<IEnumerable<Client>> GetAllClientesAsync()
