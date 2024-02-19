@@ -9,12 +9,12 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
-    readonly IDespachosServicio despachosServ;
-    readonly IInventarioServicio inventarioServ;
+    readonly IDespachosForApiServicio despachosServ;
+    readonly IInventarioForApiServicio inventarioServ;
     readonly IApiService apiServ;
     readonly DateTime ToDay;
 
-    public PgPrincipalViewModel(IApiService apiService, IDespachosServicio despachosServicio, IInventarioServicio inventarioServicio)
+    public PgPrincipalViewModel(IApiService apiService, IDespachosForApiServicio despachosServicio, IInventarioForApiServicio inventarioServicio)
     {
         ToDay = DateTime.Now;
         apiServ = apiService;
@@ -118,7 +118,7 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     }
 
     #region Extra
-    private void ApiServ_OnNotificationReceived(string channel, string message)
+    private async void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
         {
@@ -126,9 +126,9 @@ public partial class PgPrincipalViewModel : ObservableRecipient
                 Console.WriteLine($"Mensaje recibido: {message}");
                 if (message.Contains("ha sido agregado") || message.Contains("ha sido eliminado"))
                 {
-                    GetUsadas();
-                    GetVentas();
-                    totalArticulos = inventarioServ.TotalStock.ToString("00");
+                    await GetUsadas();
+                    await GetVentas();
+                    totalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
                 }
                 break;
             case "ReceiveStatusMessage":
@@ -137,14 +137,14 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         }
     }
 
-    void GetVentas()
+    async Task GetVentas()
     {
-        Ventas = despachosServ.GetAllByDate(FirstDayOfWeek(ToDay), ToDay).Where(x => x.IsSale).Count().ToString("00") ?? "00";
+        Ventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
     }
 
-    void GetUsadas()
+    async Task GetUsadas()
     {
-        Usadas = despachosServ.GetAllByDate(FirstDayOfWeek(ToDay), ToDay).Where(x => !x.IsSale).Count().ToString("00") ?? "00";
+        Usadas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
     }
 
     DateTime FirstDayOfWeek(DateTime? datetime = null)

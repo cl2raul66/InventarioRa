@@ -3,21 +3,7 @@ using LiteDB;
 
 namespace InventarioRa.Servicios;
 
-public interface IDespachosServicio
-{
-    bool Exist { get; }
-
-    bool Delete(string id);
-    IEnumerable<Dispatch> GetAll();
-    public IEnumerable<string> GetAllInventoryId();
-    IEnumerable<Dispatch> GetAllByClientId(string? clientId);
-    IEnumerable<Dispatch> GetAllByInventoryId(string inventoryId);
-    IEnumerable<Dispatch> GetAllByDate(DateTime startDate, DateTime endDate);
-    Dispatch? GetById(string id);
-    bool Insert(Dispatch inventory);
-}
-
-public class DespachosServicio : IDespachosServicio
+public class DespachosServicio
 {
     readonly ILiteCollection<Dispatch> collection;
 

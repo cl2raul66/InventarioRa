@@ -3,21 +3,7 @@ using LiteDB;
 
 namespace InventarioRa.Servicios;
 
-public interface IInventarioServicio
-{
-    bool Exist { get; }
-    int TotalStock { get; }
-
-    bool Delete(string id);
-    IEnumerable<Inventory> GetAll();
-    IEnumerable<string> GetAllArticle();
-    Inventory? GetById(string id);
-    IEnumerable<Inventory>? GetByArticle(string article);
-    bool Insert(Inventory inventory);
-    bool Update(Inventory inventory);
-}
-
-public class InventarioServicio : IInventarioServicio
+public class InventarioServicio
 {
     readonly ILiteCollection<Inventory> collection;
 

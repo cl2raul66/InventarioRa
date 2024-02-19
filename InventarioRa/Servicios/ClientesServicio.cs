@@ -3,19 +3,7 @@ using LiteDB;
 
 namespace InventarioRa.Servicios;
 
-public interface IClientesServicio
-{
-    bool Exist { get; }
-
-    bool Delete(string id);
-    IEnumerable<Client> GetAll();
-    Client? GetById(string id);
-    IEnumerable<string> GetNames();
-    string? GetId(string? name);
-    bool Insert(Client client);
-}
-
-public class ClientesServicio : IClientesServicio
+public class ClientesServicio
 {
     readonly ILiteCollection<Client> collection;
 
