@@ -143,7 +143,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    async Task Verinventario()
+    public async Task Verinventario()
     {
         ItsFilteredVisisble = false;
         SelectedDispatch = null;
