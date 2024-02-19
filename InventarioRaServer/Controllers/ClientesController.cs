@@ -57,7 +57,7 @@ public class ClientesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete(string id)                                 
     {
         var result = _clientesServicio.Delete(id);
 

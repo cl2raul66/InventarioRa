@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InventarioRa.Models;
 using InventarioRa.Servicios;
@@ -15,18 +17,21 @@ public partial class PgClientesViewModel : ObservableRecipient
     {
         apiServ = apiService;
         clientesServ = clientesServicio;
+        apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
     }
 
-    private async void HandleNotification(string message)
-    {
-        await GetClients();
-    }
+    //private async void HandleNotification(string message)
+    //{
+    //    await GetClients();
+    //}
+    [ObservableProperty]
+    bool isApiHealthy;
 
     [ObservableProperty]
-    ObservableCollection<string>? clients;
+    ObservableCollection<Client>? clients;
 
     [ObservableProperty]
-    string? selectedClient;
+    Client? selectedClient;
 
     [RelayCommand]
     async Task AddCliente()
@@ -36,16 +41,18 @@ public partial class PgClientesViewModel : ObservableRecipient
         {
             if (result == string.Empty)
             {
-                await Shell.Current.DisplayAlert("Error", "Debe poner un nombre, vuelva a intentar", "Cerrar");
+                //await Shell.Current.DisplayAlert("Error", "Debe poner un nombre, vuelva a intentar", "Cerrar");
+                await MensajeAlInsertar("Debe poner un nombre, vuelva a intentar");
             }
             return;
         }
 
         string name = result.Trim().ToUpper();
 
-        if (Clients?.Any(x => x.Equals(name)) ?? false)
+        if (Clients!.Any(x => x.Name == name))
         {
-            await Shell.Current.DisplayAlert("Error", "Ya existe ese nombre, favor coloque otro", "Cerrar");
+            //await Shell.Current.DisplayAlert("Error", "Ya existe ese nombre, favor coloque otro", "Cerrar");
+            await MensajeAlInsertar("Ya existe ese nombre, favor coloque otro");
             return;
         }
 
@@ -53,13 +60,13 @@ public partial class PgClientesViewModel : ObservableRecipient
         {
             Clients = [];
         }
+        Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
+        _ = await clientesServ.CreateClienteAsync(newClient);
 
-        bool resultInsert = await clientesServ.CreateClienteAsync(new Client { Id = Guid.NewGuid().ToString(), Name = name });
-
-        if (resultInsert)
-        {
-            Clients!.Add(name);
-        }
+        //if (resultInsert)
+        //{
+        //    Clients!.Add(newClient);
+        //}
     }
 
     [RelayCommand]
@@ -83,33 +90,42 @@ public partial class PgClientesViewModel : ObservableRecipient
         await Shell.Current.GoToAsync("..", true);
     }
 
-
     #region Extra
-    public async Task InitializeNotificationApi()
+    private async void ApiServ_OnNotificationReceived(string channel, string message)
     {
-        await apiServ.ConnectAsync();
-        apiServ.OnNotificationsReceived += NotificationApiServ_OnNotificationReceived;
-    }
-
-    private async void NotificationApiServ_OnNotificationReceived(string channel, string message)
-    {        
         switch (channel)
         {
             case "ReceiveMessage":
-                await GetClients();
+                Console.WriteLine($"Mensaje recibido: {message}");
+                if (message.Contains("Un nuevo cliente ha sido agregado") || message.Contains("Un cliente ha sido eliminado"))
+                {
+                    await GetClients();
+                }
                 break;
             case "ReceiveStatusMessage":
+                IsApiHealthy = message == "El servidor está iniciando";
                 break;
         }
     }
 
-    async Task GetClients()
+    public async Task GetClients()
     {
         if (await clientesServ.ExistAsync())
         {
-            var names = await clientesServ.GetNames();
-            Clients = new(names);
+            var getClients = await clientesServ.GetAllClientesAsync();
+            Clients = new(getClients);
         }
+    }
+
+    async Task MensajeAlInsertar(string mensaje)
+    {
+        CancellationTokenSource cancellationTokenSource = new();
+        ToastDuration duration = ToastDuration.Short;
+        double fontSize = 14;
+
+        var toast = Toast.Make(mensaje, duration, fontSize);
+
+        await toast.Show(cancellationTokenSource.Token);
     }
     #endregion
 }

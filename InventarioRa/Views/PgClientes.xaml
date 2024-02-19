@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:ctk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:model="clr-namespace:InventarioRa.Models"
     xmlns:vm="clr-namespace:InventarioRa.ViewModels"
     Title="Clientes"
     x:DataType="vm:PgClientesViewModel"
@@ -41,62 +42,63 @@
                 </HorizontalStackLayout>
             </Grid>
         </Frame>
-        <ScrollView
-            Grid.Row="1"
-            HorizontalOptions="{OnIdiom Default=Center,
-                                        Phone=Fill}"
-            MaximumWidthRequest="{OnIdiom Default=400,
-                                          Phone=400}">
-            <CollectionView
-                ItemsSource="{Binding Clients, Mode=OneWay}"
-                SelectedItem="{Binding SelectedClient}"
-                SelectionMode="Single">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout ItemSpacing="4" Orientation="Vertical" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{StaticResource BorderItem}">
-                            <Label
-                                FontAttributes="Bold"
-                                FontSize="Subtitle"
-                                TextTransform="Uppercase">
-                                <Label.FormattedText>
-                                    <FormattedString>
-                                        <Span
+        <Grid Grid.Row="1">
+            <ScrollView>
+                <CollectionView
+                    HorizontalOptions="{OnIdiom Default=Center,
+                                                Phone=Fill}"
+                    ItemsSource="{Binding Clients, Mode=OneWay}"
+                    MaximumWidthRequest="{OnIdiom Default=400,
+                                                  Phone=400}"
+                    SelectedItem="{Binding SelectedClient}"
+                    SelectionMode="Single">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout ItemSpacing="1" Orientation="Vertical" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:Client">
+                            <Frame Style="{StaticResource FrameItem}">
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="Subtitle"
+                                    TextTransform="Uppercase">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span
+                                                FontFamily="icofont"
+                                                Text="{StaticResource User}"
+                                                TextColor="{StaticResource Primary}" />
+                                            <Span Text="{Binding Name, StringFormat=' {0}'}" TextColor="{StaticResource Primary}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <StackLayout
+                                HorizontalOptions="Center"
+                                Spacing="8"
+                                VerticalOptions="Center">
+                                <Image HeightRequest="72" WidthRequest="72">
+                                    <Image.Source>
+                                        <FontImageSource
                                             FontFamily="icofont"
-                                            Text="{StaticResource User}"
-                                            TextColor="{StaticResource Primary}" />
-                                        <Span Text="{Binding ., StringFormat=' {0}'}" TextColor="{StaticResource Primary}" />
-                                    </FormattedString>
-                                </Label.FormattedText>
-                            </Label>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-                <CollectionView.EmptyView>
-                    <ContentView>
-                        <StackLayout
-                            HorizontalOptions="Center"
-                            Spacing="8"
-                            VerticalOptions="Center">
-                            <Image HeightRequest="72" WidthRequest="72">
-                                <Image.Source>
-                                    <FontImageSource
-                                        FontFamily="icofont"
-                                        Glyph="{StaticResource Contacts}"
-                                        Color="{StaticResource SecondaryDarkText}" />
-                                </Image.Source>
-                            </Image>
-                            <Label
-                                FontSize="Body"
-                                Text="No hay clientes"
-                                TextColor="{StaticResource SecondaryDarkText}" />
-                        </StackLayout>
-                    </ContentView>
-                </CollectionView.EmptyView>
-            </CollectionView>
-        </ScrollView>
+                                            Glyph="{StaticResource Contacts}"
+                                            Color="{StaticResource SecondaryDarkText}" />
+                                    </Image.Source>
+                                </Image>
+                                <Label
+                                    FontSize="Body"
+                                    Text="No hay clientes"
+                                    TextColor="{StaticResource SecondaryDarkText}" />
+                            </StackLayout>
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </ScrollView>
+        </Grid>
         <Frame Grid.Row="2" Padding="8">
             <Grid>
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">

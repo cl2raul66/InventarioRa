@@ -21,6 +21,7 @@ public class ApiService : IApiService
 {
     readonly string? key;
     HubConnection? connection;
+    Uri? serverUrl;
 
     public event Action<string, string>? OnNotificationsReceived;
 
@@ -41,11 +42,12 @@ public class ApiService : IApiService
         {
             try
             {
-                var response = await HttpClient.GetAsync(new Uri(new Uri(url), "/healthchecks").ToString());
+                serverUrl = new Uri(url);
+                var response = await HttpClient.GetAsync(new Uri(serverUrl, "/healthchecks").ToString());
                 switch (response.StatusCode)
                 {
                     case HttpStatusCode.OK:
-                        Preferences.Default.Set(key!, new Uri(new Uri(url), "/serverStatusHub").ToString());
+                        Preferences.Default.Set(key!, serverUrl.ToString());
                         return true;
                     default:
                         Console.WriteLine($"Error al intentar acceder a la URL: {response.StatusCode}");
@@ -66,7 +68,7 @@ public class ApiService : IApiService
     public async Task ConnectAsync()
     {
         connection = new HubConnectionBuilder()
-            .WithUrl(GetServerUrl)
+            .WithUrl(new Uri(new Uri(GetServerUrl), "/serverStatusHub"))
             .WithAutomaticReconnect()
             .Build();
 

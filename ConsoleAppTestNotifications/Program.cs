@@ -1,5 +1,4 @@
 ﻿using ConsoleAppTestNotifications;
-using Microsoft.AspNetCore.SignalR.Client;
 using Spectre.Console;
 
 //var connection = new HubConnectionBuilder()

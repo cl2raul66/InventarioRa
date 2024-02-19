@@ -117,6 +117,7 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         IsApiHealthy = apiServ.IsConnected;
     }
 
+    #region Extra
     private void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
@@ -168,4 +169,5 @@ public partial class PgPrincipalViewModel : ObservableRecipient
 
         await toast.Show(cancellationTokenSource.Token);
     }
+    #endregion
 }

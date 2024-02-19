@@ -8,7 +8,7 @@ public interface IClientesForApiServicio
 {
     Task<bool> ExistAsync();
     Task<bool> CreateClienteAsync(Client client);
-    Task DeleteClienteAsync(string id);
+    Task<bool> DeleteClienteAsync(string id);
     Task<IEnumerable<Client>> GetAllClientesAsync();
     Task<Client> GetClienteByIdAsync(string id);
     Task<IEnumerable<string>> GetNames();
@@ -16,36 +16,40 @@ public interface IClientesForApiServicio
 
 public class ClientesForApiServicio : IClientesForApiServicio
 {
-    readonly HttpClient _httpClient;
-    readonly string serverUrl;
+    readonly IApiService apiServ;
+    readonly Uri serverUrl;
+
     readonly JsonSerializerOptions jsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
     };
 
     public ClientesForApiServicio(IApiService apiService)
     {
-        _httpClient = apiService.HttpClient;
-        serverUrl = apiService.GetServerUrl;
+        apiServ = apiService;
+        serverUrl = new Uri(apiService.GetServerUrl);
     }
 
     public async Task<bool> ExistAsync()
     {
-        var response = await _httpClient!.GetAsync($"{serverUrl}/Clientes/Exist");
+        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes/Exist"));
+        response.EnsureSuccessStatusCode();
         return response.IsSuccessStatusCode;
     }
 
     public async Task<IEnumerable<Client>> GetAllClientesAsync()
     {
-        var response = await _httpClient!.GetAsync($"{serverUrl}/Clientes");
+        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes"));
+        response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
-        var clientes = JsonSerializer.Deserialize<IEnumerable<Client>>(content);
-        return clientes!;
+        return JsonSerializer.Deserialize<IEnumerable<Client>>(content, jsonOptions)!;
     }
 
     public async Task<Client> GetClienteByIdAsync(string id)
     {
-        var response = await _httpClient!.GetAsync($"{serverUrl}/Clientes/{id}");
+        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes/{id}"));
+        response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
         var cliente = JsonSerializer.Deserialize<Client>(content);
         return cliente!;
@@ -56,13 +60,16 @@ public class ClientesForApiServicio : IClientesForApiServicio
         var json = JsonSerializer.Serialize(client);
         var data = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient!.PostAsync($"{serverUrl}/Clientes", data);
+        var response = await apiServ.HttpClient.PostAsync(new Uri(serverUrl, "/Clientes"), data);
+        response.EnsureSuccessStatusCode();
         return response.IsSuccessStatusCode;
     }
 
-    public async Task DeleteClienteAsync(string id)
+    public async Task<bool> DeleteClienteAsync(string id)
     {
-        await _httpClient!.DeleteAsync($"{serverUrl}/Clientes/{id}");
+        var response = await apiServ.HttpClient.DeleteAsync(new Uri(serverUrl, "/Clientes/{id}"));
+        response.EnsureSuccessStatusCode();
+        return response.IsSuccessStatusCode;
     }
 
     public async Task<IEnumerable<string>> GetNames()

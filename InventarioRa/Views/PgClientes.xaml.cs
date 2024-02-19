@@ -14,6 +14,6 @@ public partial class PgClientes : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-		await (BindingContext as PgClientesViewModel)!.InitializeNotificationApi();
+		await (BindingContext as PgClientesViewModel)!.GetClients();
     }
 }
