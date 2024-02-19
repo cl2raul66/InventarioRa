@@ -15,7 +15,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     readonly IClientesServicio clientesServ;
     readonly IDespachosServicio despachosServ;
 
-    public PgInventarioViewModel(IInventarioServicio inventarioServicio, IClientesServicio clientesServicio, IDespachosServicio despachosServicio)
+    public PgInventarioViewModel(IClientesServicio clientesServicio, IInventarioServicio inventarioServicio,  IDespachosServicio despachosServicio)
     {
         IsActive = true;
         inventarioServ = inventarioServicio;

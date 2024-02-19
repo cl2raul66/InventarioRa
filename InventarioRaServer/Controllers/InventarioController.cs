@@ -48,8 +48,8 @@ public class InventarioController : ControllerBase
         return BadRequest("No se pudo insertar el inventario");
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(string id, Inventory inventory)
+    [HttpPut]
+    public async Task<IActionResult> Update(Inventory inventory)
     {
         var result = _inventarioServicio.Update(inventory);
 
@@ -72,5 +72,37 @@ public class InventarioController : ControllerBase
             return Ok(result);
         }
         return NotFound();
+    }
+
+    [HttpGet("article/{article}")]
+    public IActionResult GetByArticle(string article)
+    {
+        var result = _inventarioServicio.GetByArticle(article);
+
+        return result is not null ? Ok(result) : NotFound();
+    }
+
+    [HttpGet("articles")]
+    public IActionResult GetAllArticles()
+    {
+        var result = _inventarioServicio.GetAllArticle();
+
+        return result is not null ? Ok(result) : NotFound();
+    }
+
+    [HttpGet("exist")]
+    public IActionResult Exist()
+    {
+        var result = _inventarioServicio.Exist;
+
+        return Ok(result);
+    }
+
+    [HttpGet("totalstock")]
+    public IActionResult TotalStock()
+    {
+        var result = _inventarioServicio.TotalStock;
+
+        return Ok(result);
     }
 }
