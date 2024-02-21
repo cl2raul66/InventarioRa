@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using InventarioRa.Servicios;
 using InventarioRa.Views;
 
@@ -9,17 +10,24 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
-    readonly IDespachosForApiServicio despachosServ;
-    readonly IInventarioForApiServicio inventarioServ;
     readonly IApiService apiServ;
     readonly DateTime ToDay;
+    //readonly IDespachosForApiServicio despachosServ;
+    //readonly IInventarioForApiServicio inventarioServ;
 
-    public PgPrincipalViewModel(IApiService apiService, IDespachosForApiServicio despachosServicio, IInventarioForApiServicio inventarioServicio)
+    //public PgPrincipalViewModel(IApiService apiService, IInventarioForApiServicio inventarioServicio, IDespachosForApiServicio despachosServicio)
+    //{
+    //    ToDay = DateTime.Now;
+    //    apiServ = apiService;
+    //    inventarioServ = inventarioServicio;
+    //    despachosServ = despachosServicio;
+    //}
+
+    public PgPrincipalViewModel(IApiService apiService)
     {
+        IsActive = true;
         ToDay = DateTime.Now;
         apiServ = apiService;
-        inventarioServ = inventarioServicio;
-        despachosServ = despachosServicio;
     }
 
     [ObservableProperty]
@@ -105,45 +113,66 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    public async Task InitializeNotificationApi()
+    public async Task ConectarToApi()
+    {
+        await InitializeNotificationApi(true);
+    }
+
+    protected override void OnActivated()
+    {
+        base.OnActivated();
+
+        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalarticulos", (r, m) =>
+        {
+            r.TotalArticulos = m;
+        });
+        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalventas", (r, m) =>
+        {
+            r.Ventas = m;
+        });
+        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totaluso", (r, m) =>
+        {
+            r.Usadas = m;
+        });
+    }
+
+    #region Extra
+    public async Task InitializeNotificationApi(bool conMensaje)
     {
         if (string.IsNullOrEmpty(apiServ.GetServerUrl))
         {
             IsApiHealthy = false;
+            if (conMensaje)
+            {
+                await MensajeIrAjustes();
+            }
             return;
         }
         await apiServ.ConnectAsync();
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
         IsApiHealthy = apiServ.IsConnected;
-        TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
-        await GetUsadas();
-        await GetVentas();
+        //TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+        //await GetUsadas();
+        //await GetVentas();
     }
 
-    #region Extra
-    private async void ApiServ_OnNotificationReceived(string channel, string message)
+    private void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
         {
             case "ReceiveMessage":
                 Console.WriteLine($"Mensaje recibido: {message}");
-                //if (message.Contains("ha sido agregado") || message.Contains("ha sido eliminado"))
-                //{
-                //    await GetUsadas();
-                //    await GetVentas();
-                //    totalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
-                //}
                 if (message.Contains("Un nuevo inventario ha sido agregado")
                     || message.Contains("Un inventario ha sido actualizado")
                     || message.Contains("Un inventario ha sido eliminado"))
                 {
-                    TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+                    //TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
                 }
                 if (message.Contains("Un nuevo despacho ha sido agregado")
                     || message.Contains("Un despacho ha sido eliminado"))
                 {
-                    await GetUsadas();
-                    await GetVentas();
+                    //await GetUsadas();
+                    //await GetVentas();
                 }
                 break;
             case "ReceiveStatusMessage":
@@ -152,15 +181,15 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         }
     }
 
-    async Task GetVentas()
-    {
-        Ventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
-    }
+    //async Task GetVentas()
+    //{
+    //    Ventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
+    //}
 
-    async Task GetUsadas()
-    {
-        Usadas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
-    }
+    //async Task GetUsadas()
+    //{
+    //    Usadas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
+    //}
 
     DateTime FirstDayOfWeek(DateTime? datetime = null)
     {

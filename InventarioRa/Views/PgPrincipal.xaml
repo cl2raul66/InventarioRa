@@ -138,7 +138,7 @@
                 <Grid ColumnDefinitions="auto,*,auto" RowSpacing="8">
                     <HorizontalStackLayout Spacing="4">
                         <Button
-                            Command="{Binding InitializeNotificationApiCommand}"
+                            Command="{Binding ConectarToApiCommand}"
                             FontFamily="icofont"
                             Text="{StaticResource Network}"
                             ToolTipProperties.Text="¡Click aqui para reconectarse!">

@@ -32,6 +32,7 @@ public class InventarioForApiServicio : IInventarioForApiServicio
     {
         apiServ = apiService;
         serverUrl = new Uri(apiService.GetServerUrl);
+        
     }
 
     public async Task<bool> ExistAsync()

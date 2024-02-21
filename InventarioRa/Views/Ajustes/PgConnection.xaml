@@ -7,6 +7,7 @@
     xmlns:vm="clr-namespace:InventarioRa.ViewModels"
     Title="Conexión"
     x:DataType="vm:PgConnectionViewModel"
+    Shell.NavBarIsVisible="False"
     Shell.PresentationMode="Animated">
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" />
@@ -35,7 +36,7 @@
             Grid.Row="1"
             Spacing="16"
             VerticalOptions="Center">
-            <Frame WidthRequest="450">
+            <Frame MinimumWidthRequest="450">
                 <VerticalStackLayout Spacing="8">
                     <Label
                         FontSize="Subtitle"

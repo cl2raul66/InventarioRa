@@ -193,6 +193,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 Inventory newInventory = new() { Id = Guid.NewGuid().ToString(), Article = m.Value.Name, Existence = m.Value.Amount };
                 _ = await inventarioServ.CreateAsync(newInventory);
             }
+            WeakReferenceMessenger.Default.Send((await inventarioServ.TotalStockAsync()).ToString("00"), "totalarticulos");
         });
 
         //Para despacho de artículo único 

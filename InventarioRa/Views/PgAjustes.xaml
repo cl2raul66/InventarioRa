@@ -13,6 +13,7 @@
 
     <Grid
         Padding="16"
+        HorizontalOptions="FillAndExpand"
         RowDefinitions="auto,*,auto"
         RowSpacing="16">
         <Frame Style="{StaticResource FrameHeader}">
@@ -34,7 +35,8 @@
             <VerticalStackLayout
                 HorizontalOptions="{OnIdiom Default='Center',
                                             Phone='Fill'}"
-                MinimumWidthRequest="400"
+                MinimumWidthRequest="{OnIdiom Default='400',
+                                              Phone='300'}"
                 Spacing="16">
                 <Grid RowDefinitions="auto,auto,auto" RowSpacing="8">
                     <Label FontSize="Subtitle" Text="Conexión:" />

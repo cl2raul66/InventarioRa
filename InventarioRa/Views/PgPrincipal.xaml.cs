@@ -14,6 +14,6 @@ public partial class PgPrincipal : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await (BindingContext as PgPrincipalViewModel)!.InitializeNotificationApi();
+        await (BindingContext as PgPrincipalViewModel)!.InitializeNotificationApi(false);
     }
 }
