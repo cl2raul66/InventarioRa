@@ -69,7 +69,16 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     var inventory = await inventarioServ.GetByIdAsync(id);
                     return new ArticleInventory { InventoryId = inventory!.Id, Article = inventory.Article };
                 }));
-                await Shell.Current.GoToAsync(nameof(PgBuscarDespachos), true, new Dictionary<string, object> { { "articles", articles } });
+                var clientIds = await despachosServ.GetAllClientIdsAsync();
+                var clientsSend = await Task.WhenAll(clientIds!.Select(async id =>
+                {
+                    var c = string.IsNullOrEmpty(id) ? null : await clientesServ.GetClienteByIdAsync(id);
+                    return c ?? new Client() { Id = id, Name = "NONE" };
+                }));
+                await Shell.Current.GoToAsync(nameof(PgBuscarDespachos), true, new Dictionary<string, object> { 
+                    { "articles", articles }, 
+                    { "clients", clientsSend } 
+                });
             }
         }
         else
@@ -144,7 +153,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    public async Task Verinventario()
+    async Task Verinventario()
     {
         ItsFilteredVisisble = false;
         SelectedDispatch = null;
@@ -276,12 +285,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             else //buscar por cliente
             {
-                string? resultClientId = (await clientesServ.GetAllClientesAsync())!.Where(x => x.Name!.ToLower() ==  entity.Client!.ToLower())?.FirstOrDefault()?.Id;
-                if (string.IsNullOrEmpty(resultClientId))
-                {
-                    Dispatches = null;
-                }
-                var resultDispatch = await despachosServ.GetAllByClientIdAsync(resultClientId!);
+                //string? resultClientId = (await clientesServ.GetAllClientesAsync())!.Where(x => x.Name!.ToLower() ==  (entity.Client?.ToLower() ?? string.Empty))?.FirstOrDefault()?.Id;
+                var resultDispatch = await despachosServ.GetAllByClientIdAsync(entity.Client);
                 if (resultDispatch is not null)
                 {
                     await GetDispatch(resultDispatch!);
@@ -295,7 +300,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     }
 
     #region Extra
-    private async void ApiServ_OnNotificationReceived(string channel, string message)
+    async void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
         {
@@ -328,7 +333,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
         }
     }
 
-    public async Task GetDispatch(IEnumerable<Dispatch>? getDispatches = null)
+    async Task GetDispatch(IEnumerable<Dispatch>? getDispatches = null)
     {
         if (await despachosServ.ExistAsync())
         {

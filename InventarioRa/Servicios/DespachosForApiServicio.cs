@@ -9,11 +9,12 @@ public interface IDespachosForApiServicio
     Task<bool> CreateDespachoAsync(Dispatch dispatch);
     Task<bool> DeleteDespachoAsync(string id);
     Task<bool> ExistAsync();
-    Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string clientId);
+    Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string? clientId);
     Task<IEnumerable<Dispatch>?> GetAllByDateAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Dispatch>?> GetAllByInventoryIdAsync(string inventoryId);
     Task<IEnumerable<Dispatch>?> GetAllDespachosAsync();
     Task<IEnumerable<string>?> GetAllInventoryIdsAsync();
+    Task<IEnumerable<string>?> GetAllClientIdsAsync();
     Task<Dispatch?> GetDespachoByIdAsync(string id);
 }
 
@@ -69,9 +70,24 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string clientId)
+    public async Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string? clientId)
     {
+        if (string.IsNullOrEmpty(clientId))
+        {
+            return await GetAllByClientIdNullAsync();
+        }
         var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Despachos/byClientId/{clientId}"));
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<IEnumerable<Dispatch>>(content, jsonOptions);
+        }
+        return null;
+    }
+    
+    async Task<IEnumerable<Dispatch>?> GetAllByClientIdNullAsync()
+    {
+        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/byClientIdNull"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -105,6 +121,17 @@ public class DespachosForApiServicio : IDespachosForApiServicio
     public async Task<IEnumerable<string>?> GetAllInventoryIdsAsync()
     {
         var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/allInventoryIds"));
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<IEnumerable<string>>(content, jsonOptions);
+        }
+        return null;
+    }
+    
+    public async Task<IEnumerable<string>?> GetAllClientIdsAsync()
+    {
+        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/allClientIds"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();

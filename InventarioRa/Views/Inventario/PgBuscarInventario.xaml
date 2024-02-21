@@ -5,9 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:InventarioRa.ViewModels"
     Title="Buscar en inventario"
-    x:DataType="vm:PgBuscarDespachosViewModel"
+    x:DataType="vm:PgBuscarInventarioViewModel"
     BackgroundColor="#30000000"
-    BindingContext="{vm:PgBuscarInventarioViewModel}"
     Shell.PresentationMode="ModalAnimated">
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsVisible="False" />

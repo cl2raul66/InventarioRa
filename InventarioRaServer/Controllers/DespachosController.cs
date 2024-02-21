@@ -66,6 +66,13 @@ public class DespachosController : ControllerBase
     {
         return Ok(_despachosServicio.GetAllByClientId(clientId));
     }
+    
+    [HttpGet("byClientIdNull")]
+    public IActionResult GetAllByClientIdNull()
+    {
+        var result = _despachosServicio.GetAllByClientId(null);
+        return result is not null ? Ok(result) : NotFound();
+    }
 
     [HttpGet("byInventoryId/{inventoryId}")]
     public IActionResult GetAllByInventoryId(string inventoryId)
@@ -83,6 +90,12 @@ public class DespachosController : ControllerBase
     public IActionResult GetAllInventoryIds()
     {
         return Ok(_despachosServicio.GetAllInventoryId());
+    }
+
+    [HttpGet("allClientIds")]
+    public IActionResult GetAllClientIds()
+    {
+        return Ok(_despachosServicio.GetAllClientIds());
     }
 
     [HttpGet("exist")]

@@ -8,13 +8,20 @@ using System.ComponentModel;
 namespace InventarioRa.ViewModels;
 
 [QueryProperty(nameof(Articles), "articles")]
+[QueryProperty(nameof(Clients), "clients")]
 public partial class PgBuscarDespachosViewModel : ObservableObject
 {
     [ObservableProperty]
-    List<ArticleInventory>? articles;
+    ArticleInventory[]? articles;
 
     [ObservableProperty]
     ArticleInventory? selectedArticle;
+    
+    [ObservableProperty]
+    Client[]? clients;
+
+    [ObservableProperty]
+    Client? selectedClient;
 
     [ObservableProperty]
     bool isByDate = true;
@@ -37,8 +44,8 @@ public partial class PgBuscarDespachosViewModel : ObservableObject
     [ObservableProperty]
     string? hasErrorinfo;
 
-    [ObservableProperty]
-    string? findByText;
+    //[ObservableProperty]
+    //string? findByText;
 
     [RelayCommand]
     async Task Buscar()
@@ -73,9 +80,9 @@ public partial class PgBuscarDespachosViewModel : ObservableObject
             _ = WeakReferenceMessenger.Default.Send(new SendDispatchForSearchChangedMessage(new() { Article = SelectedArticle }));
         }
 
-        if (IsByClient)
-        {
-            _ = WeakReferenceMessenger.Default.Send(new SendDispatchForSearchChangedMessage(new() { Client = FindByText }));
+        if (IsByClient && SelectedClient is not null)
+        {           
+            _ = WeakReferenceMessenger.Default.Send(new SendDispatchForSearchChangedMessage(new() { Client = SelectedClient.Id }));
         }
 
         await GoToBack();

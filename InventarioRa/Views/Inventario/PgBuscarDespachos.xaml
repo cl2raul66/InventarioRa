@@ -78,10 +78,14 @@
                         <Frame Padding="16" IsVisible="{Binding IsByClient, Mode=OneWay}">
                             <VerticalStackLayout Spacing="2">
                                 <Label Text="Nombre:" />
-                                <Entry
+                                <!--<Entry
                                     ClearButtonVisibility="WhileEditing"
                                     Placeholder="Escriba aquí"
-                                    Text="{Binding FindByText}" />
+                                    Text="{Binding FindByText}" />-->
+                                <Picker
+                                    ItemDisplayBinding="{Binding Name}"
+                                    ItemsSource="{Binding Clients, Mode=OneWay}"
+                                    SelectedItem="{Binding SelectedClient}" />
                             </VerticalStackLayout>
                         </Frame>
                         <Frame Padding="16" IsVisible="{Binding IsByArticle, Mode=OneWay}">

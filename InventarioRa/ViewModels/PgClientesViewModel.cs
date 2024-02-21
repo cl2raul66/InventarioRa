@@ -102,7 +102,7 @@ public partial class PgClientesViewModel : ObservableRecipient
         if (await clientesServ.ExistAsync())
         {
             var getClients = await clientesServ.GetAllClientesAsync();
-            Clients = new(getClients);
+            Clients = new(getClients!);
         }
     }
 

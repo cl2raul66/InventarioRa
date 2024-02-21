@@ -10,7 +10,8 @@ public interface IDespachosServicio
 
     bool Delete(string id);
     IEnumerable<Dispatch> GetAll();
-    public IEnumerable<string> GetAllInventoryId();
+    IEnumerable<string> GetAllInventoryId();
+    IEnumerable<string> GetAllClientIds();
     IEnumerable<Dispatch> GetAllByClientId(string? clientId);
     IEnumerable<Dispatch> GetAllByInventoryId(string inventoryId);
     IEnumerable<Dispatch> GetAllByDate(DateTime startDate, DateTime endDate);
@@ -47,4 +48,5 @@ public class DespachosServicio : IDespachosServicio
     public IEnumerable<Dispatch> GetAllByInventoryId(string inventoryId) => collection.FindAll().Where(x => x.Articles != null && x.Articles!.ContainsKey(inventoryId));
     public IEnumerable<Dispatch> GetAllByDate(DateTime startDate, DateTime endDate) => collection.Find(x => x.Date.Date >= startDate.Date && x.Date.Date <= endDate.Date);
     public IEnumerable<string> GetAllInventoryId() => collection.FindAll().SelectMany(d => d.Articles!.Keys).Distinct();
+    public IEnumerable<string> GetAllClientIds() => collection.FindAll().Select(d => d.ClientId ?? string.Empty).Distinct();
 }
