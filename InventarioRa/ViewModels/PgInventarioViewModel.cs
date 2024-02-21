@@ -6,6 +6,7 @@ using InventarioRa.Servicios;
 using InventarioRa.Tools.Messages;
 using InventarioRa.Views;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace InventarioRa.ViewModels;
 
@@ -97,7 +98,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
         var si = new Inventory { Id = SelectedInventory!.Id, Article = SelectedInventory!.Article, Existence = SelectedInventory!.Existence };
         SelectedInventory = null;
         bool isSale = await Shell.Current.DisplayAlert("Tipo de despacho?", "Es venta pública", "Si", "No");
-        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync()).ToDictionary(x => x.Id!, x => x.Name!);
+        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync())!.ToDictionary(x => x.Id!, x => x.Name!);
         Dictionary<string, object> sendObjects = new()
         {
             {"issale", isSale},
@@ -111,7 +112,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
     async Task GoToDespachoVarios()
     {
         bool isSale = await Shell.Current.DisplayAlert("Tipo de despacho?", "Es venta pública", "Si", "No");
-        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync()).ToDictionary(x => x.Id!, x => x.Name!);
+        Dictionary<string, string> clients = (await clientesServ.GetAllClientesAsync())!.ToDictionary(x => x.Id!, x => x.Name!);
         Dictionary<string, string> inventory = Warehouse!.ToDictionary(x => x.Id!, x => x.Article!);
         Dictionary<string, object> sendObjects = new()
         {
@@ -177,19 +178,11 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(existingInventoryItem.Id!))!;
                 theInventoryItem!.Existence += m.Value.Amount;
                 _ = await inventarioServ.UpdateAsync(theInventoryItem);
-                //if (result)
-                //{
-                //    await GetWarehouse();
-                //}
             }
             else
             {
                 Inventory newInventory = new() { Id = Guid.NewGuid().ToString(), Article = m.Value.Name, Existence = m.Value.Amount };
                 _ = await inventarioServ.CreateAsync(newInventory);
-                //if (result)
-                //{
-                //    await GetWarehouse();
-                //}
             }
         });
 
@@ -199,7 +192,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
             var getArticle = m.Value.Articles!.First();
             Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(getArticle.Key!))!;
             theInventoryItem.Existence -= getArticle.Value;
-            if ((await clientesServ.GetClienteByIdAsync(m.Value.ClientId!)) is null)
+            if (!string.IsNullOrEmpty(m.Value.ClientId) && (await clientesServ.GetClienteByIdAsync(m.Value.ClientId!)) is null)
             {
                 Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = m.Value.ClientId! };
                 var result = await clientesServ.CreateClienteAsync(newClient);
@@ -212,10 +205,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
             if (resultUpdate)
             {
                 _ = await despachosServ.CreateDespachoAsync(m.Value);
-                //if (result)
-                //{
-                //    await GetWarehouse();
-                //}
             }
         });
 
@@ -242,10 +231,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     theInventoryItem.Existence -= getArticle.Value;
                     _ = await inventarioServ.UpdateAsync(theInventoryItem);
                 }
-                //if (resultUpdate)
-                //{
-                //    await GetWarehouse();
-                //}
             }
         });
 
@@ -253,7 +238,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
         WeakReferenceMessenger.Default.Register<SearchInventoryForSearchChangedMessage>(this, async (r, m) =>
         {
             SelectedInventory = null;
-
             var result = await inventarioServ.GetByArticleAsync(m.Value);
             Warehouse = result is not null ? new(result) : null;
         });
@@ -292,7 +276,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             else //buscar por cliente
             {
-                string? resultClientId = (await clientesServ.GetAllClientesAsync()).Where(x => x.Name!.ToLower() ==  entity.Client!.ToLower())?.FirstOrDefault()?.Id;
+                string? resultClientId = (await clientesServ.GetAllClientesAsync())!.Where(x => x.Name!.ToLower() ==  entity.Client!.ToLower())?.FirstOrDefault()?.Id;
                 if (string.IsNullOrEmpty(resultClientId))
                 {
                     Dispatches = null;
@@ -356,10 +340,31 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 Client = string.IsNullOrEmpty(x.ClientId)
                     ? "NONE"
                     : (await clientesServ.GetClienteByIdAsync(x.ClientId!))?.Name ?? "NONE",
-                Description = string.Join(", ", x.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))
+                Description = string.Join(", ",
+                [
+                    .. (await Task.WhenAll(x.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))),
+                ])
             });
             var transform = await Task.WhenAll(transformTasks);
             Dispatches = new(transform.OrderBy(x => x.Date));
+        }
+    }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName == nameof(Warehouse))
+        {
+            var r = Warehouse?.Count ?? 0;
+        }
+    }
+
+    public async void Inicializar()
+    {
+        if (!ItsFilteredVisisble)
+        {
+            await Verinventario();
         }
     }
     #endregion

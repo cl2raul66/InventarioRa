@@ -198,10 +198,7 @@
                         <DataTemplate x:DataType="model:DispatchView">
                             <Border Style="{StaticResource BorderItem}">
                                 <VerticalStackLayout Spacing="4">
-                                    <Label
-                                        FontSize="Body"
-                                        HorizontalTextAlignment="Start"
-                                        LineBreakMode="MiddleTruncation">
+                                    <Label FontSize="Subtitle" HorizontalTextAlignment="Start">
                                         <Label.FormattedText>
                                             <FormattedString>
                                                 <Span Text="{Binding Client, Mode=OneWay}" />
@@ -212,9 +209,10 @@
                                     </Label>
                                     <Label
                                         FontAttributes="Bold"
-                                        FontSize="Subtitle"
+                                        FontSize="Body"
                                         HorizontalTextAlignment="{OnIdiom Default='Center',
                                                                           Phone='Start'}"
+                                        LineBreakMode="MiddleTruncation"
                                         Text="{Binding Description, Mode=OneWay}" />
                                 </VerticalStackLayout>
                             </Border>

@@ -115,6 +115,9 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         await apiServ.ConnectAsync();
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
         IsApiHealthy = apiServ.IsConnected;
+        TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+        await GetUsadas();
+        await GetVentas();
     }
 
     #region Extra
@@ -124,11 +127,23 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         {
             case "ReceiveMessage":
                 Console.WriteLine($"Mensaje recibido: {message}");
-                if (message.Contains("ha sido agregado") || message.Contains("ha sido eliminado"))
+                //if (message.Contains("ha sido agregado") || message.Contains("ha sido eliminado"))
+                //{
+                //    await GetUsadas();
+                //    await GetVentas();
+                //    totalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+                //}
+                if (message.Contains("Un nuevo inventario ha sido agregado")
+                    || message.Contains("Un inventario ha sido actualizado")
+                    || message.Contains("Un inventario ha sido eliminado"))
+                {
+                    TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+                }
+                if (message.Contains("Un nuevo despacho ha sido agregado")
+                    || message.Contains("Un despacho ha sido eliminado"))
                 {
                     await GetUsadas();
                     await GetVentas();
-                    totalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
                 }
                 break;
             case "ReceiveStatusMessage":
