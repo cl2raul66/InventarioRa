@@ -216,6 +216,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
             {
                 _ = await despachosServ.CreateDespachoAsync(m.Value);
             }
+            await EnviarCambiosEnDespachos();
         });
 
         //Para despacho de artículo varios 
@@ -242,6 +243,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     _ = await inventarioServ.UpdateAsync(theInventoryItem);
                 }
             }
+            await EnviarCambiosEnDespachos();
         });
 
         //Para buscar en Inventario
@@ -372,6 +374,23 @@ public partial class PgInventarioViewModel : ObservableRecipient
         {
             await Verinventario();
         }
+    }
+
+    DateTime FirstDayOfWeek(DateTime? datetime = null)
+    {
+        var now = datetime is null ? DateTime.Now : datetime.Value;
+        DayOfWeek dayOfWeek = now.DayOfWeek;
+        int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return now.AddDays(-daysUntilFirstDayOfWeek);
+    }
+
+    private async Task EnviarCambiosEnDespachos()
+    {
+        var totalventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(Preferences.Default.Get("hoy", DateTime.Now)), Preferences.Default.Get("hoy", DateTime.Now)))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
+        WeakReferenceMessenger.Default.Send(totalventas, "totalventas");
+
+        var totaluso = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(Preferences.Default.Get("hoy", DateTime.Now)), Preferences.Default.Get("hoy", DateTime.Now)))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
+        WeakReferenceMessenger.Default.Send(totaluso, "totaluso");
     }
     #endregion
 }

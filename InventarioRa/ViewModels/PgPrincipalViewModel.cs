@@ -11,7 +11,6 @@ namespace InventarioRa.ViewModels;
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
     readonly IApiService apiServ;
-    readonly DateTime ToDay;
     //readonly IDespachosForApiServicio despachosServ;
     //readonly IInventarioForApiServicio inventarioServ;
 
@@ -26,8 +25,11 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     public PgPrincipalViewModel(IApiService apiService)
     {
         IsActive = true;
-        ToDay = DateTime.Now;
+        Preferences.Default.Set("hoy", DateTime.Now);
         apiServ = apiService;
+        TotalArticulos = Preferences.Default.Get<string?>("totalarticulos", null);
+        Ventas = Preferences.Default.Get<string?>("totalventas", null);
+        Usadas = Preferences.Default.Get<string?>("totaluso", null);
     }
 
     [ObservableProperty]
@@ -132,14 +134,17 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalarticulos", (r, m) =>
         {
             r.TotalArticulos = m;
+            Preferences.Default.Set("totalarticulos", m);
         });
         WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalventas", (r, m) =>
         {
             r.Ventas = m;
+            Preferences.Default.Set("totalventas", m);
         });
         WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totaluso", (r, m) =>
         {
             r.Usadas = m;
+            Preferences.Default.Set("totaluso", m);
         });
     }
 
@@ -198,13 +203,6 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     //    Usadas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
     //}
 
-    DateTime FirstDayOfWeek(DateTime? datetime = null)
-    {
-        var now = datetime is null ? DateTime.Now : datetime.Value;
-        DayOfWeek dayOfWeek = now.DayOfWeek;
-        int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-        return now.AddDays(-daysUntilFirstDayOfWeek);
-    }
 
     async Task MensajeIrAjustes() => await Shell.Current.DisplayAlert("Alerta", "¡Favor de ingresar una url del servidor de datos!", "Cerrar");
 
