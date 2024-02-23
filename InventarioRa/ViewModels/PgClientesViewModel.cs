@@ -44,15 +44,15 @@ public partial class PgClientesViewModel : ObservableRecipient
 
         string name = result.Trim().ToUpper();
 
+        if (!Clients?.Any() ?? true)
+        {
+            Clients = [];
+        }
+
         if (Clients!.Any(x => x.Name == name))
         {
             await MensajeAlInsertar("Ya existe ese nombre, favor coloque otro");
             return;
-        }
-
-        if (!Clients?.Any() ?? true)
-        {
-            Clients = [];
         }
         Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
         _ = await clientesServ.CreateClienteAsync(newClient);
