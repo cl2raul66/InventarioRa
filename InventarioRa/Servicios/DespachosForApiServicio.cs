@@ -6,6 +6,7 @@ namespace InventarioRa.Servicios;
 
 public interface IDespachosForApiServicio
 {
+    void Initialize(HttpClient httpClient, string serverUrl);
     Task<bool> CreateDespachoAsync(Dispatch dispatch);
     Task<bool> DeleteDespachoAsync(string id);
     Task<bool> ExistAsync();
@@ -20,8 +21,10 @@ public interface IDespachosForApiServicio
 
 public class DespachosForApiServicio : IDespachosForApiServicio
 {
-    readonly IApiService apiServ;
-    readonly Uri serverUrl;
+    //readonly IApiService apiServ;
+    //readonly Uri serverUrl;
+    HttpClient? ClientHttp;
+    Uri? ServerUrl;
 
     readonly JsonSerializerOptions jsonOptions = new()
     {
@@ -29,15 +32,15 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         WriteIndented = true
     };
 
-    public DespachosForApiServicio(IApiService apiService)
-    {
-        apiServ = apiService;
-        serverUrl = new Uri(apiService.GetServerUrl);
-    }
+    //public DespachosForApiServicio(IApiService apiService)
+    //{
+    //    apiServ = apiService;
+    //    ServerUrl = new Uri(apiService.GetServerUrl);
+    //}
 
     public async Task<IEnumerable<Dispatch>?> GetAllDespachosAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -48,7 +51,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
 
     public async Task<Dispatch?> GetDespachoByIdAsync(string id)
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Despachos/{id}"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/{id}"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -60,13 +63,13 @@ public class DespachosForApiServicio : IDespachosForApiServicio
     public async Task<bool> CreateDespachoAsync(Dispatch dispatch)
     {
         var content = new StringContent(JsonSerializer.Serialize(dispatch, jsonOptions), Encoding.UTF8, "application/json");
-        var response = await apiServ.HttpClient.PostAsync(new Uri(serverUrl, "/Despachos"), content);
+        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Despachos"), content);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> DeleteDespachoAsync(string id)
     {
-        var response = await apiServ.HttpClient.DeleteAsync(new Uri(serverUrl, $"/Despachos/{id}"));
+        var response = await ClientHttp!.DeleteAsync(new Uri(ServerUrl!, $"/Despachos/{id}"));
         return response.IsSuccessStatusCode;
     }
 
@@ -76,7 +79,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         {
             return await GetAllByClientIdNullAsync();
         }
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Despachos/byClientId/{clientId}"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/byClientId/{clientId}"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -87,7 +90,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
     
     async Task<IEnumerable<Dispatch>?> GetAllByClientIdNullAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/byClientIdNull"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos/byClientIdNull"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -98,7 +101,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
 
     public async Task<IEnumerable<Dispatch>?> GetAllByInventoryIdAsync(string inventoryId)
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Despachos/byInventoryId/{inventoryId}"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/byInventoryId/{inventoryId}"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -109,7 +112,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
 
     public async Task<IEnumerable<Dispatch>?> GetAllByDateAsync(DateTime startDate, DateTime endDate)
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Despachos/byDate?startDate={startDate:s}&endDate={endDate:s}"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/byDate?startDate={startDate:s}&endDate={endDate:s}"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -120,7 +123,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
 
     public async Task<IEnumerable<string>?> GetAllInventoryIdsAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/allInventoryIds"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos/allInventoryIds"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -131,7 +134,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
     
     public async Task<IEnumerable<string>?> GetAllClientIdsAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/allClientIds"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos/allClientIds"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -142,12 +145,18 @@ public class DespachosForApiServicio : IDespachosForApiServicio
 
     public async Task<bool> ExistAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Despachos/exist"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos/exist"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<bool>(content, jsonOptions);
         }
         return false;
+    }
+
+    public void Initialize(HttpClient httpClient, string serverUrl)
+    {
+        ClientHttp = httpClient;
+        ServerUrl = new Uri(serverUrl);
     }
 }

@@ -22,26 +22,7 @@
                         Command="{Binding GoToAjustesCommand}"
                         FontFamily="icofont"
                         Text="{StaticResource UiSettings}"
-                        ToolTipProperties.Text="Ver ajustes" />
-                    <!--<Button
-                        Command="{Binding GoToDetalleCommand}"
-                        FontFamily="icofont"
-                        IsVisible="{OnIdiom Default=true,
-                                            Phone=false}"
-                        Text="{StaticResource List}"
-                        ToolTipProperties.Text="Ir a detalles" />
-                    <Button
-                        Command="{Binding GoToDespachoCommand}"
-                        FontFamily="icofont"
-                        Text="{StaticResource Exit}"
-                        ToolTipProperties.Text="Realizar despacho" />
-                    <Button
-                        Command="{Binding GoToClientesCommand}"
-                        FontFamily="icofont"
-                        IsVisible="{OnIdiom Default=true,
-                                            Phone=false}"
-                        Text="{StaticResource ContactAdd}"
-                        ToolTipProperties.Text="Ir a clientes" />-->
+                        ToolTipProperties.Text="Ver ajustes" />                    
                 </HorizontalStackLayout>
             </Grid>
         </Frame>
@@ -62,7 +43,7 @@
                                     FontAttributes="Bold"
                                     Text="Total de productos: "
                                     TextColor="{StaticResource Tertiary}" />
-                                <Span Text="{Binding TotalArticulos, Mode=OneWay, TargetNullValue='0', FallbackValue='0'}" TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding TotalArticulos, Mode=OneWay, TargetNullValue='0'}" TextColor="{StaticResource Tertiary}" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>
@@ -78,7 +59,7 @@
                                     FontAttributes="Bold"
                                     Text="Para ventas: "
                                     TextColor="{StaticResource Tertiary}" />
-                                <Span Text="{Binding Ventas, Mode=OneWay, TargetNullValue='0', FallbackValue='0'}" TextColor="{StaticResource Tertiary}" />
+                                <Span Text="{Binding Ventas, Mode=OneWay, TargetNullValue='0'}" TextColor="{StaticResource Tertiary}" />
                             </FormattedString>
                         </Label.FormattedText>
                     </Label>

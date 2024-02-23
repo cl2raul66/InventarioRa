@@ -2,7 +2,6 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using InventarioRa.Servicios;
 using InventarioRa.Views;
 
@@ -10,16 +9,20 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
+    readonly DateTime hoy;
+    readonly DateTime primerDiaSemana;
     readonly IApiService apiServ;
+    readonly IInventarioForApiServicio inventarioForApiServ;
+    readonly IDespachosForApiServicio despachosForApiServ;
 
-    public PgPrincipalViewModel(IApiService apiService)
+    public PgPrincipalViewModel(IApiService apiService, IInventarioForApiServicio inventarioForApiServicio, IDespachosForApiServicio despachosForApiServicio)
     {
         IsActive = true;
-        Preferences.Default.Set("hoy", DateTime.Now);
+        hoy = DateTime.Now.Date;
+        primerDiaSemana = FirstDayOfWeek(hoy);
         apiServ = apiService;
-        TotalArticulos = Preferences.Default.Get<string?>("totalarticulos", null);
-        Ventas = Preferences.Default.Get<string?>("totalventas", null);
-        Usadas = Preferences.Default.Get<string?>("totaluso", null);
+        inventarioForApiServ = inventarioForApiServicio;
+        despachosForApiServ = despachosForApiServicio;
     }
 
     [ObservableProperty]
@@ -120,42 +123,27 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     protected override void OnActivated()
     {
         base.OnActivated();
-
-        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalarticulos", (r, m) =>
-        {
-            r.TotalArticulos = m;
-            Preferences.Default.Set("totalarticulos", m);
-        });
-        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totalventas", (r, m) =>
-        {
-            r.Ventas = m;
-            Preferences.Default.Set("totalventas", m);
-        });
-        WeakReferenceMessenger.Default.Register<PgPrincipalViewModel, string, string>(this, "totaluso", (r, m) =>
-        {
-            r.Usadas = m;
-            Preferences.Default.Set("totaluso", m);
-        });
     }
 
     #region Extra
-    public async Task InitializeNotificationApi(bool conMensaje)
+    public async Task InitializeNotificationApi()
     {
         if (string.IsNullOrEmpty(apiServ.GetServerUrl))
         {
             IsApiHealthy = false;
-            if (conMensaje)
-            {
-                await MensajeIrAjustes();
-            }
             return;
         }
         await apiServ.ConnectAsync();
+        if (apiServ.IsConnected)
+        {
+            inventarioForApiServ.Initialize(apiServ.HttpClient, apiServ.GetServerUrl);
+            despachosForApiServ.Initialize(apiServ.HttpClient, apiServ.GetServerUrl);
+        }
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
         IsApiHealthy = apiServ.IsConnected;
     }
 
-    private void ApiServ_OnNotificationReceived(string channel, string message)
+    private async void ApiServ_OnNotificationReceived(string channel, string message)
     {
         switch (channel)
         {
@@ -165,11 +153,13 @@ public partial class PgPrincipalViewModel : ObservableRecipient
                     || message.Contains("Un inventario ha sido actualizado")
                     || message.Contains("Un inventario ha sido eliminado"))
                 {
-                    //TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
+                    await GetTotalarticulos();
                 }
                 if (message.Contains("Un nuevo despacho ha sido agregado")
                     || message.Contains("Un despacho ha sido eliminado"))
                 {
+                    await GetTotaluso();
+                    await GetTotalventas();
                 }
                 break;
             case "ReceiveStatusMessage":
@@ -191,6 +181,29 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         var toast = Toast.Make(text, duration, fontSize);
 
         await toast.Show(cancellationTokenSource.Token);
+    }
+
+    DateTime FirstDayOfWeek(DateTime? datetime = null)
+    {
+        var now = datetime is null ? DateTime.Now : datetime.Value;
+        DayOfWeek dayOfWeek = now.DayOfWeek;
+        int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return now.AddDays(-daysUntilFirstDayOfWeek);
+    }
+
+    public async Task GetTotalarticulos()
+    {
+        TotalArticulos = (await inventarioForApiServ.TotalStockAsync()).ToString("0");
+    }
+
+    public async Task GetTotalventas()
+    {
+        Ventas = (await despachosForApiServ.GetAllByDateAsync(primerDiaSemana, hoy))?.Where(x => x.IsSale).Count().ToString("0") ?? "0";
+    }
+
+    public async Task GetTotaluso()
+    {
+        Usadas = (await despachosForApiServ.GetAllByDateAsync(primerDiaSemana, hoy))?.Where(x => !x.IsSale).Count().ToString("0") ?? "0";
     }
     #endregion
 }

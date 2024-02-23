@@ -75,9 +75,9 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     var c = string.IsNullOrEmpty(id) ? null : await clientesServ.GetClienteByIdAsync(id);
                     return c ?? new Client() { Id = id, Name = "NONE" };
                 }));
-                await Shell.Current.GoToAsync(nameof(PgBuscarDespachos), true, new Dictionary<string, object> { 
-                    { "articles", articles }, 
-                    { "clients", clientsSend } 
+                await Shell.Current.GoToAsync(nameof(PgBuscarDespachos), true, new Dictionary<string, object> {
+                    { "articles", articles },
+                    { "clients", clientsSend }
                 });
             }
         }
@@ -193,7 +193,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 Inventory newInventory = new() { Id = Guid.NewGuid().ToString(), Article = m.Value.Name, Existence = m.Value.Amount };
                 _ = await inventarioServ.CreateAsync(newInventory);
             }
-            WeakReferenceMessenger.Default.Send((await inventarioServ.TotalStockAsync()).ToString("00"), "totalarticulos");
         });
 
         //Para despacho de artículo único 
@@ -216,7 +215,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
             {
                 _ = await despachosServ.CreateDespachoAsync(m.Value);
             }
-            await EnviarCambiosEnDespachos();
         });
 
         //Para despacho de artículo varios 
@@ -243,7 +241,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     _ = await inventarioServ.UpdateAsync(theInventoryItem);
                 }
             }
-            await EnviarCambiosEnDespachos();
         });
 
         //Para buscar en Inventario
@@ -309,14 +306,14 @@ public partial class PgInventarioViewModel : ObservableRecipient
             case "ReceiveMessage":
                 Console.WriteLine($"Mensaje recibido: {message}");
                 if (IsWarehouseVisible && (
-                    message.Contains("Un nuevo inventario ha sido agregado") 
+                    message.Contains("Un nuevo inventario ha sido agregado")
                     || message.Contains("Un inventario ha sido actualizado")
                     || message.Contains("Un inventario ha sido eliminado")))
                 {
                     await GetWarehouse();
                 }
                 if (IsDispatchesVisible && (
-                    message.Contains("Un nuevo despacho ha sido agregado") 
+                    message.Contains("Un nuevo despacho ha sido agregado")
                     || message.Contains("Un despacho ha sido eliminado")))
                 {
                     await GetDispatch();
@@ -373,23 +370,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
         {
             await Verinventario();
         }
-    }
-
-    DateTime FirstDayOfWeek(DateTime? datetime = null)
-    {
-        var now = datetime is null ? DateTime.Now : datetime.Value;
-        DayOfWeek dayOfWeek = now.DayOfWeek;
-        int daysUntilFirstDayOfWeek = ((int)dayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-        return now.AddDays(-daysUntilFirstDayOfWeek);
-    }
-
-    private async Task EnviarCambiosEnDespachos()
-    {
-        var totalventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(Preferences.Default.Get("hoy", DateTime.Now)), Preferences.Default.Get("hoy", DateTime.Now)))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
-        WeakReferenceMessenger.Default.Send(totalventas, "totalventas");
-
-        var totaluso = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(Preferences.Default.Get("hoy", DateTime.Now)), Preferences.Default.Get("hoy", DateTime.Now)))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
-        WeakReferenceMessenger.Default.Send(totaluso, "totaluso");
     }
     #endregion
 }
