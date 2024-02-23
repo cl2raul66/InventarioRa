@@ -59,18 +59,9 @@ public partial class PgClientesViewModel : ObservableRecipient
     }
 
     [RelayCommand]
-    void Eliminar()
+    async Task Eliminar()
     {
-        //var id = clientesServ.GetId(SelectedClient!);
-        //if (string.IsNullOrEmpty(id))
-        //{
-        //    return;
-        //}
-        //bool resultRemove = clientesServ.Delete(id);
-        //if (resultRemove)
-        //{
-        //    Clients!.Remove(SelectedClient!);
-        //}
+        _ = await clientesServ.DeleteClienteAsync(SelectedClient!.Id!);
     }
 
     [RelayCommand]
