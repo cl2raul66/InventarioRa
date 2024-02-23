@@ -11,16 +11,6 @@ namespace InventarioRa.ViewModels;
 public partial class PgPrincipalViewModel : ObservableRecipient
 {
     readonly IApiService apiServ;
-    //readonly IDespachosForApiServicio despachosServ;
-    //readonly IInventarioForApiServicio inventarioServ;
-
-    //public PgPrincipalViewModel(IApiService apiService, IInventarioForApiServicio inventarioServicio, IDespachosForApiServicio despachosServicio)
-    //{
-    //    ToDay = DateTime.Now;
-    //    apiServ = apiService;
-    //    inventarioServ = inventarioServicio;
-    //    despachosServ = despachosServicio;
-    //}
 
     public PgPrincipalViewModel(IApiService apiService)
     {
@@ -163,9 +153,6 @@ public partial class PgPrincipalViewModel : ObservableRecipient
         await apiServ.ConnectAsync();
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
         IsApiHealthy = apiServ.IsConnected;
-        //TotalArticulos = (await inventarioServ.TotalStockAsync()).ToString("00");
-        //await GetUsadas();
-        //await GetVentas();
     }
 
     private void ApiServ_OnNotificationReceived(string channel, string message)
@@ -183,8 +170,6 @@ public partial class PgPrincipalViewModel : ObservableRecipient
                 if (message.Contains("Un nuevo despacho ha sido agregado")
                     || message.Contains("Un despacho ha sido eliminado"))
                 {
-                    //await GetUsadas();
-                    //await GetVentas();
                 }
                 break;
             case "ReceiveStatusMessage":
@@ -192,17 +177,6 @@ public partial class PgPrincipalViewModel : ObservableRecipient
                 break;
         }
     }
-
-    //async Task GetVentas()
-    //{
-    //    Ventas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => x.IsSale).Count().ToString("00") ?? "00";
-    //}
-
-    //async Task GetUsadas()
-    //{
-    //    Usadas = (await despachosServ.GetAllByDateAsync(FirstDayOfWeek(ToDay), ToDay))?.Where(x => !x.IsSale).Count().ToString("00") ?? "00";
-    //}
-
 
     async Task MensajeIrAjustes() => await Shell.Current.DisplayAlert("Alerta", "¡Favor de ingresar una url del servidor de datos!", "Cerrar");
 

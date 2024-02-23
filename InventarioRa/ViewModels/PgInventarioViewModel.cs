@@ -288,7 +288,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             else //buscar por cliente
             {
-                //string? resultClientId = (await clientesServ.GetAllClientesAsync())!.Where(x => x.Name!.ToLower() ==  (entity.Client?.ToLower() ?? string.Empty))?.FirstOrDefault()?.Id;
                 var resultDispatch = await despachosServ.GetAllByClientIdAsync(entity.Client);
                 if (resultDispatch is not null)
                 {

@@ -145,10 +145,5 @@ public partial class PgDespachoVariosViewModel : ObservableValidator
         {
             Warehouse = new(from x in InventorySend! select (new Inventory { Id = x.Key, Article = x.Value }));
         }
-
-        if (e.PropertyName == nameof(ArticlesSend))
-        {
-            
-        }
     }
 }

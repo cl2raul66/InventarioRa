@@ -44,9 +44,6 @@ public partial class PgBuscarDespachosViewModel : ObservableObject
     [ObservableProperty]
     string? hasErrorinfo;
 
-    //[ObservableProperty]
-    //string? findByText;
-
     [RelayCommand]
     async Task Buscar()
     {
