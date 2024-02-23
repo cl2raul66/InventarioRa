@@ -115,7 +115,14 @@ public partial class PgPrincipalViewModel : ObservableRecipient
     [RelayCommand]
     public async Task ConectarToApi()
     {
-        await InitializeNotificationApi(true);
+        if (string.IsNullOrEmpty(apiServ.GetServerUrl))
+        {
+            IsApiHealthy = false;
+            await MensajeIrAjustes();
+            return;
+        }
+        apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
+        IsApiHealthy = apiServ.IsConnected;
     }
 
     protected override void OnActivated()
