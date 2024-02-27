@@ -46,14 +46,14 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Client client)
     {
-        var result = _clientesServicio.Insert(client);
+        string id = _clientesServicio.Insert(client);
 
-        if (result)
+        if (!string.IsNullOrEmpty(id))
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un nuevo cliente ha sido agregado");
-            return Ok(client);
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{nameof(Client)}:{id}");
+            return Ok();
         }
-        return BadRequest("No se pudo insertar el cliente");
+        return BadRequest();
     }
 
     [HttpDelete("{id}")]

@@ -21,8 +21,6 @@ public interface IDespachosForApiServicio
 
 public class DespachosForApiServicio : IDespachosForApiServicio
 {
-    //readonly IApiService apiServ;
-    //readonly Uri serverUrl;
     HttpClient? ClientHttp;
     Uri? ServerUrl;
 
@@ -31,12 +29,6 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true
     };
-
-    //public DespachosForApiServicio(IApiService apiService)
-    //{
-    //    apiServ = apiService;
-    //    ServerUrl = new Uri(apiService.GetServerUrl);
-    //}
 
     public async Task<IEnumerable<Dispatch>?> GetAllDespachosAsync()
     {

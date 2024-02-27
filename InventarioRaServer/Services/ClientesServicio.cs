@@ -13,7 +13,7 @@ public interface IClientesServicio
     Client? GetById(string id);
     IEnumerable<string> GetNames();
     string? GetId(string? name);
-    bool Insert(Client client);
+    string Insert(Client client);
 }
 
 public class ClientesServicio : IClientesServicio
@@ -37,7 +37,7 @@ public class ClientesServicio : IClientesServicio
 
     public Client? GetById(string id) => collection.FindById(id);
 
-    public bool Insert(Client client) => collection.Insert(client) is not null;
+    public string Insert(Client client) => collection.Insert(client).AsString;
 
     public bool Delete(string id) => collection.Delete(id);
 

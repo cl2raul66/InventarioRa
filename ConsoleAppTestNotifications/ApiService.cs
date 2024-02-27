@@ -41,7 +41,7 @@ public class ApiService
         {
             try
             {
-                if (connection.State == HubConnectionState.Disconnected)
+                if (connection.State is HubConnectionState.Disconnected)
                 {
                     await connection.StartAsync();
                     break;

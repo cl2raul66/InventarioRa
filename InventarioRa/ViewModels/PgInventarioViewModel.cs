@@ -144,11 +144,11 @@ public partial class PgInventarioViewModel : ObservableRecipient
         bool isOk = await Shell.Current.DisplayAlert("Precaución?", $"¿Seguro de eliminar {SelectedInventory!.Article}?", "Si", "No");
         if (isOk)
         {
-            bool resul = await inventarioServ.DeleteAsync(SelectedInventory.Id!);
-            if (resul)
-            {
-                Warehouse!.Remove(SelectedInventory);
-            }
+            _ = await inventarioServ.DeleteAsync(SelectedInventory.Id!);
+            //if (resul)
+            //{
+            //    Warehouse!.Remove(SelectedInventory);
+            //}
         }
     }
 
@@ -304,11 +304,22 @@ public partial class PgInventarioViewModel : ObservableRecipient
         switch (channel)
         {
             case "ReceiveMessage":
-                Console.WriteLine($"Mensaje recibido: {message}");
-                if (IsWarehouseVisible && (
-                    message.Contains("Un nuevo inventario ha sido agregado")
-                    || message.Contains("Un inventario ha sido actualizado")
-                    || message.Contains("Un inventario ha sido eliminado")))
+                if (IsWarehouseVisible)
+                {
+                    if (
+                    message.Contains("Un nuevo inventario ha sido agregado"))
+                    {
+                        
+                    }
+                    if (message.Contains("Un inventario ha sido actualizado"))
+                    {
+
+                    }
+                    if (message.Contains("Un inventario ha sido eliminado"))
+                    {
+
+                    }
+                }
                 {
                     await GetWarehouse();
                 }

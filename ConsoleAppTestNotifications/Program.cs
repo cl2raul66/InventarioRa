@@ -88,7 +88,7 @@ using Spectre.Console;
 //    await Task.Delay(1000);
 //}
 
-var apiService = new ApiService("http://localhost:5000/serverStatusHub");
+var apiService = new ApiService("http://localhost:5003/serverStatusHub");
 
 apiService.OnStatusMessageReceived += (message) =>
 {
