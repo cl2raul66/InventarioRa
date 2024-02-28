@@ -14,7 +14,7 @@ public interface IInventarioServicio
     IEnumerable<string> GetAllArticle();
     Inventory? GetById(string id);
     IEnumerable<Inventory>? GetByArticle(string article);
-    bool Insert(Inventory inventory);
+    string Insert(Inventory inventory);
     bool Update(Inventory inventory);
 }
 
@@ -41,7 +41,7 @@ public class InventarioServicio : IInventarioServicio
 
     public Inventory? GetById(string id) => collection.FindById(id);
 
-    public bool Insert(Inventory inventory) => collection.Insert(inventory) is not null;
+    public string Insert(Inventory inventory) => collection.Insert(inventory).AsString;
 
     public bool Update(Inventory inventory) => collection.Update(inventory);
 

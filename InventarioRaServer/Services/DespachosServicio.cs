@@ -16,7 +16,7 @@ public interface IDespachosServicio
     IEnumerable<Dispatch> GetAllByInventoryId(string inventoryId);
     IEnumerable<Dispatch> GetAllByDate(DateTime startDate, DateTime endDate);
     Dispatch? GetById(string id);
-    bool Insert(Dispatch inventory);
+    string Insert(Dispatch inventory);
 }
 
 public class DespachosServicio : IDespachosServicio
@@ -40,7 +40,7 @@ public class DespachosServicio : IDespachosServicio
 
     public Dispatch? GetById(string id) => collection.FindById(id);
 
-    public bool Insert(Dispatch inventory) => collection.Insert(inventory) is not null;
+    public string Insert(Dispatch inventory) => collection.Insert(inventory).AsString;
 
     public bool Delete(string id) => collection.Delete(id);
 

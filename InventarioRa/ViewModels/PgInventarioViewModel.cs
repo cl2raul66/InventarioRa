@@ -149,11 +149,12 @@ public partial class PgInventarioViewModel : ObservableRecipient
         bool isOk = await Shell.Current.DisplayAlert("Precaución?", $"¿Seguro de eliminar {SelectedInventory!.Article}?", "Si", "No");
         if (isOk)
         {
-            _ = await inventarioServ.DeleteAsync(SelectedInventory.Id!);
-            //if (resul)
-            //{
-            //    Warehouse!.Remove(SelectedInventory);
-            //}
+            bool result = await inventarioServ.DeleteAsync(SelectedInventory.Id!);
+            if (result)
+            {
+                Warehouse!.Remove(SelectedInventory);
+                SelectedInventory = null;
+            }
         }
     }
 
@@ -191,13 +192,25 @@ public partial class PgInventarioViewModel : ObservableRecipient
             {
                 Inventory theInventoryItem = (await inventarioServ.GetByIdAsync(existingInventoryItem.Id!))!;
                 theInventoryItem!.Existence += m.Value.Amount;
-                _ = await inventarioServ.UpdateAsync(theInventoryItem);
+                bool result = await inventarioServ.UpdateAsync(theInventoryItem);
+                if (result)
+                {
+                    Inventory findEle = Warehouse.First(x => x.Id == theInventoryItem.Id);
+                    int idx = Warehouse.IndexOf(findEle);
+                    Warehouse[idx] = theInventoryItem;
+                }
             }
             else
             {
                 Inventory newInventory = new() { Id = Guid.NewGuid().ToString(), Article = m.Value.Name, Existence = m.Value.Amount };
-                _ = await inventarioServ.CreateAsync(newInventory);
+                bool result = await inventarioServ.CreateAsync(newInventory);
+                if (result)
+                {
+                    Warehouse.Insert(0, newInventory);
+                }
             }
+            SelectedDispatch = null;
+            SelectedInventory = null;
         });
 
         //Para despacho de artículo único 
@@ -209,8 +222,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
             if (!string.IsNullOrEmpty(m.Value.ClientId) && (await clientesServ.GetClienteByIdAsync(m.Value.ClientId!)) is null)
             {
                 Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = m.Value.ClientId! };
-                var result = await clientesServ.CreateClienteAsync(newClient);
-                if (result)
+                var resultCreateCliente = await clientesServ.CreateClienteAsync(newClient);
+                if (resultCreateCliente)
                 {
                     m.Value.ClientId = newClient.Id;
                 }
@@ -218,7 +231,21 @@ public partial class PgInventarioViewModel : ObservableRecipient
             bool resultUpdate = await inventarioServ.UpdateAsync(theInventoryItem);
             if (resultUpdate)
             {
-                _ = await despachosServ.CreateDespachoAsync(m.Value);
+                bool result = await despachosServ.CreateDespachoAsync(m.Value);
+                if (result)
+                {
+                    Dispatches ??= [];
+                    Dispatches!.Insert(0, new()
+                    {
+                        DispatchId = m.Value.Id!,
+                        Date = m.Value.Date.ToShortDateString(),
+                        Client = string.IsNullOrEmpty(m.Value.ClientId)
+                        ? "NONE" 
+                        : (await clientesServ.GetClienteByIdAsync(m.Value.ClientId!))?.Name ?? "NONE",
+                        Description = string.Join(", ", 
+                        [.. (await Task.WhenAll(m.Value.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))),])
+                    });
+                }
             }
         });
 
@@ -234,10 +261,9 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     m.Value.ClientId = newClient.Id;
                 }
             }
-            bool result = await despachosServ.CreateDespachoAsync(m.Value);
-            if (result)
+            bool resultCreateDespacho = await despachosServ.CreateDespachoAsync(m.Value);
+            if (resultCreateDespacho)
             {
-                //bool resultUpdate = false;
                 foreach (var item in m.Value.Articles!)
                 {
                     var getArticle = item;
@@ -245,6 +271,17 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     theInventoryItem.Existence -= getArticle.Value;
                     _ = await inventarioServ.UpdateAsync(theInventoryItem);
                 }
+                Dispatches ??= [];
+                Dispatches!.Insert(0, new()
+                {
+                    DispatchId = m.Value.Id!,
+                    Date = m.Value.Date.ToShortDateString(),
+                    Client = string.IsNullOrEmpty(m.Value.ClientId)
+                        ? "NONE"
+                        : (await clientesServ.GetClienteByIdAsync(m.Value.ClientId!))?.Name ?? "NONE",
+                    Description = string.Join(", ",
+                        [.. (await Task.WhenAll(m.Value.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))),])
+                });
             }
         });
 
@@ -313,7 +350,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 {
                     if (message.Contains("Un nuevo inventario ha sido agregado"))
                     {
-                        
+
                     }
                     if (message.Contains("Un inventario ha sido actualizado"))
                     {
@@ -323,9 +360,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     {
 
                     }
-                }
-                {
-                    await GetWarehouse();
                 }
                 if (IsDispatchesVisible && (
                     message.Contains("Un nuevo despacho ha sido agregado")

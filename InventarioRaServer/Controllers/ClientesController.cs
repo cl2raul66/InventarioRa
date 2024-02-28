@@ -50,7 +50,7 @@ public class ClientesController : ControllerBase
 
         if (!string.IsNullOrEmpty(id))
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{nameof(Client)}:{id}");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Create}:{nameof(Client)}:{id}");
             return Ok();
         }
         return BadRequest();
@@ -63,7 +63,7 @@ public class ClientesController : ControllerBase
 
         if (result)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un cliente ha sido eliminado");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Delete}:{nameof(Client)}:{id}");
             return Ok(result);
         }
         return NotFound();

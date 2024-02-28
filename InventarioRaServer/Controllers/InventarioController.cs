@@ -38,14 +38,14 @@ public class InventarioController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Inventory inventory)
     {
-        var result = _inventarioServicio.Insert(inventory);
+        string id = _inventarioServicio.Insert(inventory);
 
-        if (result)
+        if (!string.IsNullOrEmpty(id))
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un nuevo inventario ha sido agregado");
-            return CreatedAtAction(nameof(GetById), new { id = inventory.Id }, inventory);
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Create}:{nameof(Inventory)}:{id}");
+            return Ok();
         }
-        return BadRequest("No se pudo insertar el inventario");
+        return BadRequest();
     }
 
     [HttpPut]
@@ -55,7 +55,7 @@ public class InventarioController : ControllerBase
 
         if (result)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un inventario ha sido actualizado");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Update}:{nameof(Inventory)}:{inventory.Id}");
             return Ok(result);
         }
         return NotFound();
@@ -68,7 +68,7 @@ public class InventarioController : ControllerBase
 
         if (result)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un inventario ha sido eliminado");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Delete}:{nameof(Inventory)}:{id}");
             return Ok(result);
         }
         return NotFound();

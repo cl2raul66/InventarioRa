@@ -38,14 +38,14 @@ public class DespachosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(Dispatch dispatch)
     {
-        var result = _despachosServicio.Insert(dispatch);
+        string id = _despachosServicio.Insert(dispatch);
 
-        if (result)
+        if (!string.IsNullOrEmpty(id))
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un nuevo despacho ha sido agregado");
-            return CreatedAtAction(nameof(GetById), new { id = dispatch.Id }, dispatch);
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Create}:{nameof(Dispatch)}:{id}");
+            return Ok();
         }
-        return BadRequest("No se pudo insertar el despacho");
+        return BadRequest();
     }
 
     [HttpDelete("{id}")]
@@ -55,7 +55,7 @@ public class DespachosController : ControllerBase
 
         if (result)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Un despacho ha sido eliminado");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Delete}:{nameof(Dispatch)}:{id}");
             return Ok(result);
         }
         return NotFound();
