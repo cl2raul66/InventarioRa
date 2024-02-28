@@ -12,6 +12,7 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgInventarioViewModel : ObservableRecipient
 {
+    bool SoyYo = false;
     readonly IApiService apiServ;
     readonly IInventarioForApiServicio inventarioServ;
     readonly IClientesForApiServicio clientesServ;
@@ -114,6 +115,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
              {"clientes", clients},
              {"selectedinventory", si}
         };
+        SoyYo = true;
         await Shell.Current.GoToAsync($"{nameof(PgInventario)}/{nameof(PgDespachoUnico)}", true, sendObjects);
     }
 
@@ -129,18 +131,21 @@ public partial class PgInventarioViewModel : ObservableRecipient
              {"clientes", clients},
              {"inventario", inventory}
         };
+        SoyYo = true;
         await Shell.Current.GoToAsync($"{nameof(PgInventario)}/{nameof(PgDespachoVarios)}", true, sendObjects);
     }
 
     [RelayCommand]
     async Task GoToAgregar()
     {
+        SoyYo = true;
         await Shell.Current.GoToAsync($"{nameof(PgInventario)}/{nameof(PgAgregarEntrada)}", true);
     }
 
     [RelayCommand]
     async Task Eliminar()
     {
+        SoyYo = true;
         bool isOk = await Shell.Current.DisplayAlert("Precaución?", $"¿Seguro de eliminar {SelectedInventory!.Article}?", "Si", "No");
         if (isOk)
         {
@@ -306,8 +311,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
             case "ReceiveMessage":
                 if (IsWarehouseVisible)
                 {
-                    if (
-                    message.Contains("Un nuevo inventario ha sido agregado"))
+                    if (message.Contains("Un nuevo inventario ha sido agregado"))
                     {
                         
                     }
