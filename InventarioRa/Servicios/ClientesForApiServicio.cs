@@ -16,8 +16,8 @@ public interface IClientesForApiServicio
 
 public class ClientesForApiServicio : IClientesForApiServicio
 {
-    readonly IApiService apiServ;
-    readonly Uri serverUrl;
+    HttpClient? ClientHttp;
+    Uri? ServerUrl;
 
     readonly JsonSerializerOptions jsonOptions = new()
     {
@@ -25,31 +25,26 @@ public class ClientesForApiServicio : IClientesForApiServicio
         WriteIndented = true
     };
 
-    public ClientesForApiServicio(IApiService apiService)
+    public void Initialize(HttpClient httpClient, string serverUrl)
     {
-        apiServ = apiService;
-        serverUrl = new Uri(apiService.GetServerUrl);
+        ClientHttp = httpClient;
+        ServerUrl = new Uri(serverUrl);
     }
 
     public async Task<bool> ExistAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes/Exist"));
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Clientes/Exist"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<bool>(content, jsonOptions);
         }
         return false;
-        //response.EnsureSuccessStatusCode();
-        //return response.IsSuccessStatusCode;
     }
 
     public async Task<IEnumerable<Client>?> GetAllClientesAsync()
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, "/Clientes"));
-        //response.EnsureSuccessStatusCode();
-        //var content = await response.Content.ReadAsStringAsync();
-        //return JsonSerializer.Deserialize<IEnumerable<Client>>(content, jsonOptions)!;
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Clientes"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -60,11 +55,7 @@ public class ClientesForApiServicio : IClientesForApiServicio
 
     public async Task<Client?> GetClienteByIdAsync(string id)
     {
-        var response = await apiServ.HttpClient.GetAsync(new Uri(serverUrl, $"/Clientes/{id}"));
-        //response.EnsureSuccessStatusCode();
-        //var content = await response.Content.ReadAsStringAsync();
-        //var cliente = JsonSerializer.Deserialize<Client>(content);
-        //return cliente!;
+        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Clientes/{id}"));
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
@@ -78,14 +69,14 @@ public class ClientesForApiServicio : IClientesForApiServicio
         var json = JsonSerializer.Serialize(client);
         var data = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await apiServ.HttpClient.PostAsync(new Uri(serverUrl, "/Clientes"), data);
+        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Clientes"), data);
         response.EnsureSuccessStatusCode();
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> DeleteClienteAsync(string id)
     {
-        var response = await apiServ.HttpClient.DeleteAsync(new Uri(serverUrl, $"/Clientes/{id}"));
+        var response = await ClientHttp!.DeleteAsync(new Uri(ServerUrl!, $"/Clientes/{id}"));
         response.EnsureSuccessStatusCode();
         return response.IsSuccessStatusCode;
     }
