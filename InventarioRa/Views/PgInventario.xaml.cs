@@ -11,10 +11,10 @@ public partial class PgInventario : ContentPage
 		BindingContext = vm;
     }
 
-    protected override void OnAppearing()
+    protected async override void OnAppearing()
     {
         base.OnAppearing();
 
-        (BindingContext as PgInventarioViewModel)!.Inicializar();
+        await (BindingContext as PgInventarioViewModel)!.Inicializar();
     }
 }

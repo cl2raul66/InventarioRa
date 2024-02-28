@@ -198,12 +198,12 @@ public partial class PgPrincipalViewModel : ObservableRecipient
 
     public async Task GetTotalventas()
     {
-        Ventas = (await despachosForApiServ.GetAllByDateAsync(primerDiaSemana, hoy))?.Where(x => x.IsSale).Count().ToString("0") ?? "0";
+        Ventas = (await despachosForApiServ.GetAllByDatesAsync(primerDiaSemana, hoy))?.Where(x => x.IsSale).Count().ToString("0") ?? "0";
     }
 
     public async Task GetTotaluso()
     {
-        Usadas = (await despachosForApiServ.GetAllByDateAsync(primerDiaSemana, hoy))?.Where(x => !x.IsSale).Count().ToString("0") ?? "0";
+        Usadas = (await despachosForApiServ.GetAllByDatesAsync(primerDiaSemana, hoy))?.Where(x => !x.IsSale).Count().ToString("0") ?? "0";
     }
     #endregion
 }

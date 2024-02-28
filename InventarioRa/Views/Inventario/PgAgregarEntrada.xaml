@@ -34,6 +34,8 @@
                             <Entry
                                 Grid.Row="1"
                                 ClearButtonVisibility="WhileEditing"
+                                IsSpellCheckEnabled="True"
+                                Keyboard="Plain"
                                 Placeholder="Escriba aquí"
                                 Text="{Binding Articulo}" />
                         </Grid>

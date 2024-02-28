@@ -7,16 +7,16 @@ namespace InventarioRa.Servicios;
 public interface IDespachosForApiServicio
 {
     void Initialize(HttpClient httpClient, string serverUrl);
-    Task<bool> CreateDespachoAsync(Dispatch dispatch);
-    Task<bool> DeleteDespachoAsync(string id);
+    Task<string> CreateAsync(Dispatch dispatch);
+    Task<bool> DeleteAsync(string id);
     Task<bool> ExistAsync();
     Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string? clientId);
-    Task<IEnumerable<Dispatch>?> GetAllByDateAsync(DateTime startDate, DateTime endDate);
+    Task<IEnumerable<Dispatch>?> GetAllByDatesAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Dispatch>?> GetAllByInventoryIdAsync(string inventoryId);
-    Task<IEnumerable<Dispatch>?> GetAllDespachosAsync();
+    Task<IEnumerable<Dispatch>?> GetAllAsync();
     Task<IEnumerable<string>?> GetAllInventoryIdsAsync();
     Task<IEnumerable<string>?> GetAllClientIdsAsync();
-    Task<Dispatch?> GetDespachoByIdAsync(string id);
+    Task<Dispatch?> GetByIdAsync(string id);
 }
 
 public class DespachosForApiServicio : IDespachosForApiServicio
@@ -30,7 +30,13 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         WriteIndented = true
     };
 
-    public async Task<IEnumerable<Dispatch>?> GetAllDespachosAsync()
+    public void Initialize(HttpClient httpClient, string serverUrl)
+    {
+        ClientHttp = httpClient;
+        ServerUrl = new Uri(serverUrl);
+    }
+
+    public async Task<IEnumerable<Dispatch>?> GetAllAsync()
     {
         var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Despachos"));
         if (response.IsSuccessStatusCode)
@@ -41,7 +47,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         return null;
     }
 
-    public async Task<Dispatch?> GetDespachoByIdAsync(string id)
+    public async Task<Dispatch?> GetByIdAsync(string id)
     {
         var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/{id}"));
         if (response.IsSuccessStatusCode)
@@ -52,17 +58,26 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         return null;
     }
 
-    public async Task<bool> CreateDespachoAsync(Dispatch dispatch)
+    public async Task<string> CreateAsync(Dispatch dispatch)
     {
-        var content = new StringContent(JsonSerializer.Serialize(dispatch, jsonOptions), Encoding.UTF8, "application/json");
-        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Despachos"), content);
-        return response.IsSuccessStatusCode;
+        var data = new StringContent(JsonSerializer.Serialize(dispatch, jsonOptions), Encoding.UTF8, "application/json");
+        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Despachos"), data);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsStringAsync();
+        }
+        return string.Empty;
     }
 
-    public async Task<bool> DeleteDespachoAsync(string id)
+    public async Task<bool> DeleteAsync(string id)
     {
         var response = await ClientHttp!.DeleteAsync(new Uri(ServerUrl!, $"/Despachos/{id}"));
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
+        }
+        return false;
     }
 
     public async Task<IEnumerable<Dispatch>?> GetAllByClientIdAsync(string? clientId)
@@ -102,7 +117,7 @@ public class DespachosForApiServicio : IDespachosForApiServicio
         return null;
     }
 
-    public async Task<IEnumerable<Dispatch>?> GetAllByDateAsync(DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<Dispatch>?> GetAllByDatesAsync(DateTime startDate, DateTime endDate)
     {
         var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Despachos/byDate?startDate={startDate:s}&endDate={endDate:s}"));
         if (response.IsSuccessStatusCode)
@@ -144,11 +159,5 @@ public class DespachosForApiServicio : IDespachosForApiServicio
             return JsonSerializer.Deserialize<bool>(content, jsonOptions);
         }
         return false;
-    }
-
-    public void Initialize(HttpClient httpClient, string serverUrl)
-    {
-        ClientHttp = httpClient;
-        ServerUrl = new Uri(serverUrl);
     }
 }

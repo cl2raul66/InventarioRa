@@ -7,7 +7,7 @@ namespace InventarioRa.Servicios;
 public interface IInventarioForApiServicio
 {
     void Initialize(HttpClient httpClient, string serverUrl);
-    Task<bool> CreateAsync(Inventory inventory);
+    Task<string> CreateAsync(Inventory inventory);
     Task<bool> DeleteAsync(string id);
     Task<bool> ExistAsync();
     Task<IEnumerable<string>?> GetAllArticlesAsync();
@@ -69,24 +69,38 @@ public class InventarioForApiServicio : IInventarioForApiServicio
         return null;
     }
 
-    public async Task<bool> CreateAsync(Inventory inventory)
+    public async Task<string> CreateAsync(Inventory inventory)
     {
-        var content = new StringContent(JsonSerializer.Serialize(inventory, jsonOptions), Encoding.UTF8, "application/json");
-        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Inventario"), content);
-        return response.IsSuccessStatusCode;
+        var data = new StringContent(JsonSerializer.Serialize(inventory, jsonOptions), Encoding.UTF8, "application/json");
+        var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Inventario"), data);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsStringAsync();
+        }
+        return string.Empty;
     }
 
     public async Task<bool> UpdateAsync(Inventory inventory)
     {
-        var content = new StringContent(JsonSerializer.Serialize(inventory, jsonOptions), Encoding.UTF8, "application/json");
-        var response = await ClientHttp!.PutAsync(new Uri(ServerUrl!, "/Inventario"), content);
-        return response.IsSuccessStatusCode;
+        var data = new StringContent(JsonSerializer.Serialize(inventory, jsonOptions), Encoding.UTF8, "application/json");
+        var response = await ClientHttp!.PutAsync(new Uri(ServerUrl!, "/Inventario"), data);
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
+        }
+        return false;
     }
 
     public async Task<bool> DeleteAsync(string id)
     {
         var response = await ClientHttp!.DeleteAsync(new Uri(ServerUrl!, $"/Inventario/{id}"));
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
+        }
+        return false;
     }
 
     public async Task<IEnumerable<Inventory>?> GetByArticleAsync(string article)

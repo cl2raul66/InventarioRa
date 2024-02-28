@@ -6,11 +6,12 @@ namespace InventarioRa.Servicios;
 
 public interface IClientesForApiServicio
 {
+    void Initialize(HttpClient httpClient, string serverUrl);
     Task<bool> ExistAsync();
-    Task<bool> CreateClienteAsync(Client client);
-    Task<bool> DeleteClienteAsync(string id);
-    Task<IEnumerable<Client>?> GetAllClientesAsync();
-    Task<Client?> GetClienteByIdAsync(string id);
+    Task<string> CreateAsync(Client client);
+    Task<bool> DeleteAsync(string id);
+    Task<IEnumerable<Client>?> GetAllAsync();
+    Task<Client?> GetByIdAsync(string id);
     Task<IEnumerable<string>?> GetNames();
 }
 
@@ -42,7 +43,7 @@ public class ClientesForApiServicio : IClientesForApiServicio
         return false;
     }
 
-    public async Task<IEnumerable<Client>?> GetAllClientesAsync()
+    public async Task<IEnumerable<Client>?> GetAllAsync()
     {
         var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Clientes"));
         if (response.IsSuccessStatusCode)
@@ -53,7 +54,7 @@ public class ClientesForApiServicio : IClientesForApiServicio
         return null;
     }
 
-    public async Task<Client?> GetClienteByIdAsync(string id)
+    public async Task<Client?> GetByIdAsync(string id)
     {
         var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, $"/Clientes/{id}"));
         if (response.IsSuccessStatusCode)
@@ -64,26 +65,33 @@ public class ClientesForApiServicio : IClientesForApiServicio
         return null;
     }
 
-    public async Task<bool> CreateClienteAsync(Client client)
+    public async Task<string> CreateAsync(Client client)
     {
         var json = JsonSerializer.Serialize(client);
         var data = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await ClientHttp!.PostAsync(new Uri(ServerUrl!, "/Clientes"), data);
-        response.EnsureSuccessStatusCode();
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadAsStringAsync();
+        }
+        return string.Empty;
     }
 
-    public async Task<bool> DeleteClienteAsync(string id)
+    public async Task<bool> DeleteAsync(string id)
     {
         var response = await ClientHttp!.DeleteAsync(new Uri(ServerUrl!, $"/Clientes/{id}"));
-        response.EnsureSuccessStatusCode();
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
+        }
+        return false;
     }
 
     public async Task<IEnumerable<string>?> GetNames()
     {
-        var r = await GetAllClientesAsync();
+        var r = await GetAllAsync();
         return r?.Select(x => x.Name!);
     }
 }

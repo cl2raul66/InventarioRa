@@ -1,4 +1,7 @@
-﻿namespace InventarioRa.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using InventarioRa.Servicios;
+
+namespace InventarioRa.Models;
 
 public class DispatchView
 {

@@ -55,13 +55,13 @@ public partial class PgClientesViewModel : ObservableRecipient
             return;
         }
         Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
-        _ = await clientesServ.CreateClienteAsync(newClient);
+        _ = await clientesServ.CreateAsync(newClient);
     }
 
     [RelayCommand]
     async Task Eliminar()
     {
-        _ = await clientesServ.DeleteClienteAsync(SelectedClient!.Id!);
+        _ = await clientesServ.DeleteAsync(SelectedClient!.Id!);
     }
 
     [RelayCommand]
@@ -92,7 +92,7 @@ public partial class PgClientesViewModel : ObservableRecipient
     {
         if (await clientesServ.ExistAsync())
         {
-            var getClients = await clientesServ.GetAllClientesAsync();
+            var getClients = await clientesServ.GetAllAsync();
             Clients = new(getClients!);
         }
     }
