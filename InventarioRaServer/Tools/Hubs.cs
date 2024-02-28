@@ -17,4 +17,16 @@ public class NotificationHub : Hub
         ServerStatus = message;
         await Clients.All.SendAsync("ReceiveStatusMessage", message);
     }
+
+    public async Task JoinGroup(GroupName groupName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName.ToString());
+        await Clients.Caller.SendAsync("JoinedGroup", groupName.ToString());
+    }
+
+    public async Task LeaveGroup(GroupName groupName)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName.ToString());
+        await Clients.Caller.SendAsync("LeftGroup", groupName.ToString());
+    }
 }

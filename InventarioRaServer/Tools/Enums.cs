@@ -6,3 +6,9 @@ public enum OperationType
     Delete,
     Update
 }
+
+public enum GroupName
+{
+    GroupSender,
+    GroupReceiver
+}
