@@ -51,7 +51,7 @@ public class ClientesController : ControllerBase
         if (!string.IsNullOrEmpty(id))
         {
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Create}:{nameof(Client)}:{id}");
-            return Ok();
+            return Ok(id);
         }
         return BadRequest();
     }

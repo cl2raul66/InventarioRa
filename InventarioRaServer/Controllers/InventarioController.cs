@@ -43,7 +43,7 @@ public class InventarioController : ControllerBase
         if (!string.IsNullOrEmpty(id))
         {
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", $"{OperationType.Create}:{nameof(Inventory)}:{id}");
-            return Ok();
+            return Ok(id);
         }
         return BadRequest();
     }
