@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using InventarioRa.Tools.Enums;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -93,6 +94,25 @@ public class ApiService : IApiService
         await Reconnect();
     }
 
+    public async Task JoinGroup(GroupName groupName)
+    {
+        if (connection is not null)
+        {
+            await connection.InvokeAsync("JoinGroup", groupName.ToString());
+        }
+    }
+
+    public async Task LeaveGroup(GroupName groupName)
+    {
+        if (connection is not null)
+        {
+            await connection.InvokeAsync("LeaveGroup", groupName.ToString());
+        }
+    }
+
+    public bool IsConnected => connection?.State is HubConnectionState.Connected;
+
+    #region Extra
     private async Task Reconnect()
     {
         if (connection is null)
@@ -112,10 +132,10 @@ public class ApiService : IApiService
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 await Task.Delay(3000);
             }
         }
     }
-
-    public bool IsConnected => connection?.State is HubConnectionState.Connected;
+    #endregion
 }

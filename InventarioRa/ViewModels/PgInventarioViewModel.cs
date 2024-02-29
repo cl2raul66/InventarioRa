@@ -13,7 +13,7 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgInventarioViewModel : ObservableRecipient
 {
-    bool SoyYo = false;
+    bool SoyYo;
     readonly IApiService apiServ;
     readonly IInventarioForApiServicio inventarioServ;
     readonly IClientesForApiServicio clientesServ;
@@ -96,7 +96,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
         }
     }
-
 
     [RelayCommand]
     async Task GoToBack()
@@ -213,6 +212,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
             }
             SelectedDispatch = null;
             SelectedInventory = null;
+            await Task.Delay(5000);
+            SoyYo = false;
         });
 
         //Para despacho de artículo único 
@@ -249,6 +250,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
                     });
                 }
             }
+            await Task.Delay(5000);
+            SoyYo = false;
         });
 
         //Para despacho de artículo varios 
@@ -285,6 +288,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
                         [.. (await Task.WhenAll(m.Value.Articles!.Select(async a => $"{(await inventarioServ.GetByIdAsync(a.Key))!.Article} ({a.Value})"))),])
                 });
             }
+            await Task.Delay(5000);
+            SoyYo = false;
         });
 
         //Para buscar en Inventario
@@ -408,6 +413,7 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 break;
         }
     }
+
     async Task GetWarehouse()
     {
         if (await inventarioServ.ExistAsync())

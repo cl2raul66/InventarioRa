@@ -23,9 +23,9 @@ var app = builder.Build();
 var hubContext = app.Services.GetService<IHubContext<NotificationHub>>();
 if (hubContext is not null)
 {
-    AnsiConsole.MarkupLine("[green]El servidor está iniciando[/]");
-    NotificationHub.ServerStatus = "El servidor está iniciando";
-    await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.ServerStatus);
+    AnsiConsole.MarkupLine("[green]El servidor está iniciado[/]");
+    NotificationHub.Status = ServerStatus.Running;
+    await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.Status.ToString());
 }
 
 app.UseSwagger();
@@ -55,9 +55,9 @@ applicationLifetime?.ApplicationStopping.Register(async () =>
     {
         if (hubContext is not null)
         {
-            AnsiConsole.MarkupLine("[red]El servidor va a detenerse[/]");
-            NotificationHub.ServerStatus = "El servidor va a detenerse";
-            await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.ServerStatus);
+            AnsiConsole.MarkupLine("[red]El servidor se va a detener[/]");
+            NotificationHub.Status = ServerStatus.Running;
+            await hubContext.Clients.All.SendAsync("ReceiveStatusMessage", NotificationHub.Status.ToString());
         }
     });
 
