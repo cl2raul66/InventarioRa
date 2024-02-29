@@ -443,7 +443,6 @@ public partial class PgInventarioViewModel : ObservableRecipient
                 clientesServ.Initialize(apiServ.HttpClient, apiServ.GetServerUrl);
             }
         }
-
     }
 
     public async Task Inicializar()

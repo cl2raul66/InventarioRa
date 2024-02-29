@@ -4,12 +4,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InventarioRa.Models;
 using InventarioRa.Servicios;
+using InventarioRa.Tools.Enums;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace InventarioRa.ViewModels;
 
-public partial class PgClientesViewModel : ObservableRecipient
+public partial class PgClientesViewModel : ObservableObject
 {
+    //bool SoyYo;
     readonly IClientesForApiServicio clientesServ;
     readonly IApiService apiServ;
 
@@ -18,6 +21,7 @@ public partial class PgClientesViewModel : ObservableRecipient
         apiServ = apiService;
         clientesServ = clientesServicio;
         apiServ.OnNotificationsReceived += ApiServ_OnNotificationReceived;
+        IsApiHealthy = apiServ.IsConnected;
     }
 
     [ObservableProperty]
@@ -32,22 +36,19 @@ public partial class PgClientesViewModel : ObservableRecipient
     [RelayCommand]
     async Task AddCliente()
     {
-        var result = await Shell.Current.DisplayPromptAsync("Agregar cliente", "Nombre:");
-        if (string.IsNullOrEmpty(result))
+        var resultDisplayPrompt = await Shell.Current.DisplayPromptAsync("Agregar cliente", "Nombre:");
+        if (string.IsNullOrEmpty(resultDisplayPrompt))
         {
-            if (result == string.Empty)
+            if (resultDisplayPrompt == string.Empty)
             {
                 await MensajeAlInsertar("Debe poner un nombre, vuelva a intentar");
             }
             return;
         }
 
-        string name = result.Trim().ToUpper();
+        string name = resultDisplayPrompt.Trim().ToUpper();
 
-        if (!Clients?.Any() ?? true)
-        {
-            Clients = [];
-        }
+        Clients ??= [];
 
         if (Clients!.Any(x => x.Name == name))
         {
@@ -55,7 +56,12 @@ public partial class PgClientesViewModel : ObservableRecipient
             return;
         }
         Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
+        //SoyYo = true;
         _ = await clientesServ.CreateAsync(newClient);
+        //if (string.IsNullOrEmpty(result))
+        //{
+        //    Clients.Insert(0, newClient);
+        //}
     }
 
     [RelayCommand]
@@ -76,21 +82,34 @@ public partial class PgClientesViewModel : ObservableRecipient
         switch (channel)
         {
             case "ReceiveMessage":
-                Console.WriteLine($"Mensaje recibido: {message}");
-                if (message.Contains("Un nuevo cliente ha sido agregado") || message.Contains("Un cliente ha sido eliminado"))
+                var messageObj = message.Split(':');
+                if (messageObj[1] == nameof(Client))
                 {
-                    await GetClients();
+                    Clients ??= [];                    
+                    if (messageObj[0] == OperationType.Create.ToString())
+                    {
+                        Client Ele = (await clientesServ.GetByIdAsync(messageObj[2]))!;
+                        Clients.Insert(0, Ele);
+                    }
+                    if (messageObj[0] == OperationType.Delete.ToString())
+                    {
+                        if (Clients.Count > 0)
+                        {
+                            Client deleteEle = Clients.First(x => x.Id == messageObj[2]);
+                            Clients.Remove(deleteEle);
+                        }
+                    }
                 }
                 break;
             case "ReceiveStatusMessage":
-                IsApiHealthy = message == "El servidor está iniciando";
+                IsApiHealthy = message == ServerStatus.Running.ToString();
                 break;
         }
     }
 
     public async Task GetClients()
     {
-        if (await clientesServ.ExistAsync())
+        if (await clientesServ.ExistAsync() && Clients is null)
         {
             var getClients = await clientesServ.GetAllAsync();
             Clients = new(getClients!);
@@ -106,6 +125,18 @@ public partial class PgClientesViewModel : ObservableRecipient
         var toast = Toast.Make(mensaje, duration, fontSize);
 
         await toast.Show(cancellationTokenSource.Token);
+    }
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.PropertyName == nameof(IsApiHealthy))
+        {
+            if (IsApiHealthy)
+            {
+                clientesServ.Initialize(apiServ.HttpClient, apiServ.GetServerUrl);
+            }
+        }
     }
     #endregion
 }
