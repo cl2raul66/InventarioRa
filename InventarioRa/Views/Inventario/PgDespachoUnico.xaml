@@ -85,6 +85,9 @@
                                 <Entry
                                     Grid.Row="1"
                                     ClearButtonVisibility="WhileEditing"
+                                    IsSpellCheckEnabled="True"
+                                    IsTextPredictionEnabled="True"
+                                    Keyboard="Plain"
                                     Placeholder="Escriba aquí"
                                     Text="{Binding ClienteName}" />
                             </Grid>

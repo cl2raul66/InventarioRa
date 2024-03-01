@@ -12,7 +12,6 @@ namespace InventarioRa.ViewModels;
 
 public partial class PgClientesViewModel : ObservableObject
 {
-    //bool SoyYo;
     readonly IClientesForApiServicio clientesServ;
     readonly IApiService apiServ;
 
@@ -56,12 +55,7 @@ public partial class PgClientesViewModel : ObservableObject
             return;
         }
         Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = name };
-        //SoyYo = true;
         _ = await clientesServ.CreateAsync(newClient);
-        //if (string.IsNullOrEmpty(result))
-        //{
-        //    Clients.Insert(0, newClient);
-        //}
     }
 
     [RelayCommand]

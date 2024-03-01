@@ -44,8 +44,9 @@ public partial class PgDespachoUnicoViewModel : ObservableValidator
     async Task Guardar()
     {
         ValidateAllProperties();
-        var existeClient = Clientes!.Any(x => x.Name!.ToUpper() == SelectedCliente?.Name?.ToUpper());
-        if (HasErrors && existeClient)
+        //var existeClient = Clientes!.Any(x => x.Name!.ToUpper() == SelectedCliente?.Name?.ToUpper());
+        //if (HasErrors && existeClient)
+        if (HasErrors)
         {
             VisibleErrorinfo = true;
             await Task.Delay(5000);
@@ -53,7 +54,7 @@ public partial class PgDespachoUnicoViewModel : ObservableValidator
             return;
         }
 
-        string? clienteId = string.IsNullOrEmpty(SelectedCliente?.Id) ? ClienteName : SelectedCliente.Id;
+        string? clienteId = string.IsNullOrEmpty(SelectedCliente?.Id) ? ClienteName?.Trim().ToUpper() ?? string.Empty : SelectedCliente.Id;
 
         Dispatch sendDispatch = new() { Id = Guid.NewGuid().ToString(), Date = DateTime.Now, Articles = new() { { selectedInventory!.Id!, double.Parse(Cantidad!)! } }, ClientId = clienteId ?? string.Empty, IsSale = IsSale };
         _ = WeakReferenceMessenger.Default.Send(new SendDispatchChangedMessage(sendDispatch), "unico");

@@ -77,8 +77,18 @@ public partial class PgBuscarDespachosViewModel : ObservableObject
             _ = WeakReferenceMessenger.Default.Send(new SendDispatchForSearchChangedMessage(new() { Article = SelectedArticle }));
         }
 
-        if (IsByClient && SelectedClient is not null)
-        {           
+        if (IsByClient)
+        {
+            if (SelectedClient is null)
+            {
+                VisibleErrorinfo = true;
+                HasErrorinfo = "Debe seleccionar un cliente.";
+                await Task.Delay(5000);
+                VisibleErrorinfo = false;
+                HasErrorinfo = string.Empty;
+                return;
+            }
+
             _ = WeakReferenceMessenger.Default.Send(new SendDispatchForSearchChangedMessage(new() { Client = SelectedClient.Id }));
         }
 

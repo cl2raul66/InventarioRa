@@ -57,7 +57,7 @@
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="model:Client">
-                            <Frame Style="{StaticResource FrameItem}">
+                            <Border Style="{StaticResource BorderItem}">
                                 <Label
                                     FontAttributes="Bold"
                                     FontSize="Subtitle"
@@ -72,7 +72,7 @@
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
-                            </Frame>
+                            </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                     <CollectionView.EmptyView>

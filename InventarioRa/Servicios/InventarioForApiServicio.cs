@@ -31,8 +31,11 @@ public class InventarioForApiServicio : IInventarioForApiServicio
 
     public void Initialize(HttpClient httpClient, string serverUrl)
     {
-        ClientHttp = httpClient;
-        ServerUrl = new Uri(serverUrl);
+        if (ClientHttp is null)
+        {
+            ClientHttp = httpClient;
+            ServerUrl = new Uri(serverUrl);
+        }
     }
 
     public async Task<bool> ExistAsync()

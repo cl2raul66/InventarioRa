@@ -11,5 +11,9 @@ public partial class PgDespachoUnico : ContentPage
     {
         PickerClient.IsEnabled = !PickerClient.IsEnabled;
         GridOfEntryClient.IsVisible = !GridOfEntryClient.IsVisible;
+        if (GridOfEntryClient.IsVisible)
+        {
+            PickerClient.SelectedItem = null;
+        }
     }
 }
