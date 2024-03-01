@@ -37,7 +37,18 @@ public class ClientesServicio : IClientesServicio
 
     public Client? GetById(string id) => collection.FindById(id);
 
-    public string Insert(Client client) => collection.Insert(client).AsString;
+    public string Insert(Client client)
+    {
+        try
+        {
+            return collection.Insert(client).AsString;
+        }
+        catch (Exception)
+        {
+
+            return string.Empty;
+        }        
+    }
 
     public bool Delete(string id) => collection.Delete(id);
 

@@ -41,7 +41,17 @@ public class InventarioServicio : IInventarioServicio
 
     public Inventory? GetById(string id) => collection.FindById(id);
 
-    public string Insert(Inventory inventory) => collection.Insert(inventory).AsString;
+    public string Insert(Inventory inventory)
+    {
+        try
+        {
+            return collection.Insert(inventory).AsString;
+        }
+        catch (Exception)
+        {
+            return string.Empty;
+        }
+    }
 
     public bool Update(Inventory inventory) => collection.Update(inventory);
 

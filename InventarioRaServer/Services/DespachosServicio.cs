@@ -40,7 +40,18 @@ public class DespachosServicio : IDespachosServicio
 
     public Dispatch? GetById(string id) => collection.FindById(id);
 
-    public string Insert(Dispatch inventory) => collection.Insert(inventory).AsString;
+    public string Insert(Dispatch dispatch)
+    {
+        try
+        {
+            return collection.Insert(dispatch).AsString;
+        }
+        catch (Exception)
+        {
+
+            return string.Empty;
+        }
+    }
 
     public bool Delete(string id) => collection.Delete(id);
 
