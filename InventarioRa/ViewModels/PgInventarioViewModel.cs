@@ -196,11 +196,8 @@ public partial class PgInventarioViewModel : ObservableRecipient
 
         //Para despacho de artículo único 
         WeakReferenceMessenger.Default.Register<SendDispatchChangedMessage, string>(this, "unico", async (r, m) =>
-        {            
-            if (!string.IsNullOrEmpty(m.Value.ClientId))
-            {
-                m.Value.ClientId = await CreateClient(m.Value.ClientId);
-            }
+        {
+            m.Value.ClientId = await CreateClient(m.Value.ClientId);
             string result = await despachosServ.CreateAsync(m.Value);
             if (!string.IsNullOrEmpty(result))
             {
@@ -387,19 +384,19 @@ public partial class PgInventarioViewModel : ObservableRecipient
         }
     }
 
-    private async Task<string> CreateClient(string clientId)
+    private async Task<string> CreateClient(string? clientId)
     {
-        var clientTest = await clientesServ.GetByIdAsync(clientId);
+        var clientTest = string.IsNullOrEmpty(clientId) ? (await clientesServ.GetAllAsync())!.FirstOrDefault(x=>string.IsNullOrEmpty(x.Name)) : await clientesServ.GetByIdAsync(clientId);
         if (clientTest is null)
         {
-            Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = clientId! };
+            Client newClient = new() { Id = Guid.NewGuid().ToString(), Name = clientId };
             string resultCreateCliente = await clientesServ.CreateAsync(newClient);
             if (resultCreateCliente == newClient.Id)
             {
                 return newClient.Id;
             }
         }
-        return string.Empty;
+        return clientTest!.Id!;
     }
 
     async Task<DispatchView> ToDispatchview(Dispatch dispatch)

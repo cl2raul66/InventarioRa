@@ -68,7 +68,7 @@
                                                 FontFamily="icofont"
                                                 Text="{StaticResource User}"
                                                 TextColor="{StaticResource Primary}" />
-                                            <Span Text="{Binding Name, StringFormat=' {0}'}" TextColor="{StaticResource Primary}" />
+                                            <Span Text="{Binding Name, StringFormat=' {0}', TargetNullValue=' NONE'}" TextColor="{StaticResource Primary}" />
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>

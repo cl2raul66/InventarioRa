@@ -103,11 +103,8 @@ public partial class PgClientesViewModel : ObservableObject
 
     public async Task GetClients()
     {
-        if (await clientesServ.ExistAsync() && Clients is null)
-        {
-            var getClients = await clientesServ.GetAllAsync();
-            Clients = new(getClients!);
-        }
+        var getClients = await clientesServ.GetAllAsync();
+        Clients = new(getClients!);
     }
 
     async Task MensajeAlInsertar(string mensaje)

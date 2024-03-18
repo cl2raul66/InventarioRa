@@ -7,7 +7,6 @@ namespace InventarioRa.Servicios;
 public interface IClientesForApiServicio
 {
     void Initialize(HttpClient httpClient, string serverUrl);
-    Task<bool> ExistAsync();
     Task<string> CreateAsync(Client client);
     Task<bool> DeleteAsync(string id);
     Task<IEnumerable<Client>?> GetAllAsync();
@@ -33,17 +32,6 @@ public class ClientesForApiServicio : IClientesForApiServicio
             ClientHttp = httpClient;
             ServerUrl = new Uri(serverUrl);
         }
-    }
-
-    public async Task<bool> ExistAsync()
-    {
-        var response = await ClientHttp!.GetAsync(new Uri(ServerUrl!, "/Clientes/Exist"));
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<bool>(content, jsonOptions);
-        }
-        return false;
     }
 
     public async Task<IEnumerable<Client>?> GetAllAsync()

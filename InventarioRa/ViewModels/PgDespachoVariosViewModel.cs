@@ -71,8 +71,8 @@ public partial class PgDespachoVariosViewModel : ObservableValidator
     [RelayCommand]
     async Task Guardar()
     {
-        ValidateAllProperties(); 
-        var existeClient = Clientes!.Any(x => x.Name!.ToUpper() == SelectedCliente?.Name?.ToUpper());
+        ValidateAllProperties();
+        var existeClient = Clientes!.Any(x => (x.Name?.ToUpper() ?? string.Empty) == (SelectedCliente?.Name?.ToUpper() ?? string.Empty));
         if (HasErrors && existeClient)
         {
             VisibleErrorinfo = true;

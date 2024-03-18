@@ -6,8 +6,6 @@ namespace InventarioRaServer.Services;
 
 public interface IClientesServicio
 {
-    bool Exist { get; }
-
     bool Delete(string id);
     IEnumerable<Client> GetAll();
     Client? GetById(string id);
@@ -29,9 +27,12 @@ public class ClientesServicio : IClientesServicio
 
         LiteDatabase db = new(cnx);
         collection = db.GetCollection<Client>();
-    }
 
-    public bool Exist => collection.Count() > 0;
+        if (collection.Count() == 0)
+        {
+            Insert(new Client() { Id = ObjectId.NewObjectId().ToString() });
+        }
+    }
 
     public IEnumerable<Client> GetAll() => collection.FindAll().Reverse();
 
@@ -47,7 +48,7 @@ public class ClientesServicio : IClientesServicio
         {
 
             return string.Empty;
-        }        
+        }
     }
 
     public bool Delete(string id) => collection.Delete(id);

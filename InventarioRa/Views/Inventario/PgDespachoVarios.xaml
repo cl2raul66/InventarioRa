@@ -67,7 +67,7 @@
                                         <Picker
                                             x:Name="PickerClient"
                                             Title="{OnIdiom Phone='Selecciona aquí'}"
-                                            ItemDisplayBinding="{Binding Name}"
+                                            ItemDisplayBinding="{Binding Name, TargetNullValue='NONE'}"
                                             ItemsSource="{Binding Clientes, Mode=OneWay}"
                                             SelectedItem="{Binding SelectedCliente}" />
                                         <Button

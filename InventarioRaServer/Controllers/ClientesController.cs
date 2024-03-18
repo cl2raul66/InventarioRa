@@ -19,14 +19,6 @@ public class ClientesController : ControllerBase
         _hubContext = hubContext;
     }
 
-    [HttpGet("Exist")]
-    public IActionResult Exist()
-    {
-        var result = _clientesServicio.Exist;
-
-        return Ok(result);
-    }
-
     [HttpGet]
     public IActionResult GetAll()
     {
